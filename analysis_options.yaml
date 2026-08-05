@@ -1,0 +1,17 @@
+# Static analysis configuration. Run with `flutter analyze`.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+  exclude:
+    - '**/*.g.dart'
+    - '**/*.freezed.dart'
+    - 'build/**'
+
+linter:
+  rules:
+    unawaited_futures: true
+    prefer_relative_imports: true
+    avoid_print: true
