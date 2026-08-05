@@ -4,44 +4,77 @@ import 'package:tracker_flutter/core/config/app_environment.dart';
 
 void main() {
   group('AppConfig.fromEnvironment', () {
-    test('falls back to a local base URL when none is defined', () {
-      final config = AppConfig.fromEnvironment(AppEnvironment.local);
-      expect(config.apiBaseUrl, isNotEmpty);
+    test('falls back to localhost only for the local environment', () {
+      final config = AppConfig.fromEnvironment(
+        AppEnvironment.local,
+        apiBaseUrl: '',
+      );
+
+      expect(config.apiBaseUrl, 'http://localhost:8080');
       expect(config.environment, AppEnvironment.local);
     });
 
-    test('enables verbose logging only for local and development', () {
+    test('requires an explicit base URL outside the local environment', () {
+      for (final environment in [
+        AppEnvironment.development,
+        AppEnvironment.staging,
+        AppEnvironment.production,
+      ]) {
+        expect(
+          () => AppConfig.fromEnvironment(environment, apiBaseUrl: ''),
+          throwsStateError,
+          reason: '${environment.name} must not silently use localhost',
+        );
+      }
+    });
+
+    test('rejects an insecure production base URL', () {
       expect(
-        AppConfig.fromEnvironment(AppEnvironment.local).enableVerboseLogging,
-        isTrue,
-      );
-      expect(
-        AppConfig.fromEnvironment(
-          AppEnvironment.development,
-        ).enableVerboseLogging,
-        isTrue,
-      );
-      expect(
-        AppConfig.fromEnvironment(AppEnvironment.staging).enableVerboseLogging,
-        isFalse,
-      );
-      expect(
-        AppConfig.fromEnvironment(
+        () => AppConfig.fromEnvironment(
           AppEnvironment.production,
-        ).enableVerboseLogging,
-        isFalse,
+          apiBaseUrl: 'http://api.example.com',
+        ),
+        throwsStateError,
       );
     });
 
+    test('rejects malformed and unsupported base URLs', () {
+      expect(
+        () => AppConfig.fromEnvironment(
+          AppEnvironment.staging,
+          apiBaseUrl: 'api.example.com',
+        ),
+        throwsFormatException,
+      );
+      expect(
+        () => AppConfig.fromEnvironment(
+          AppEnvironment.staging,
+          apiBaseUrl: 'ftp://api.example.com',
+        ),
+        throwsFormatException,
+      );
+    });
+
+    test('accepts a secure production base URL', () {
+      final config = AppConfig.fromEnvironment(
+        AppEnvironment.production,
+        apiBaseUrl: 'https://api.example.com',
+      );
+
+      expect(config.apiBaseUrl, 'https://api.example.com');
+      expect(config.isProduction, isTrue);
+    });
+
+    test('enables verbose logging only for local and development', () {
+      expect(_config(AppEnvironment.local).enableVerboseLogging, isTrue);
+      expect(_config(AppEnvironment.development).enableVerboseLogging, isTrue);
+      expect(_config(AppEnvironment.staging).enableVerboseLogging, isFalse);
+      expect(_config(AppEnvironment.production).enableVerboseLogging, isFalse);
+    });
+
     test('isProduction is true only for the production environment', () {
-      expect(
-        AppConfig.fromEnvironment(AppEnvironment.production).isProduction,
-        isTrue,
-      );
-      expect(
-        AppConfig.fromEnvironment(AppEnvironment.staging).isProduction,
-        isFalse,
-      );
+      expect(_config(AppEnvironment.production).isProduction, isTrue);
+      expect(_config(AppEnvironment.staging).isProduction, isFalse);
     });
   });
 
@@ -54,4 +87,13 @@ void main() {
       expect(AppEnvironment.fromName('nonsense'), AppEnvironment.local);
     });
   });
+}
+
+AppConfig _config(AppEnvironment environment) {
+  return AppConfig.fromEnvironment(
+    environment,
+    apiBaseUrl: environment == AppEnvironment.local
+        ? 'http://localhost:8080'
+        : 'https://api.example.com',
+  );
 }

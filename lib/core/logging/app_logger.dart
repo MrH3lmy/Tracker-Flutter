@@ -24,7 +24,7 @@ class AppLogger {
 
   static bool _initialized = false;
 
-  /// Wires `package:logging` to `dart:developer` / stdout exactly once.
+  /// Wires `package:logging` to stdout exactly once.
   /// [productionMode] bounds verbosity so request/response bodies and debug
   /// noise never ship to release builds.
   static void init({required bool productionMode}) {
@@ -32,9 +32,8 @@ class AppLogger {
     _initialized = true;
     pkg.Logger.root.level = productionMode ? pkg.Level.WARNING : pkg.Level.ALL;
     pkg.Logger.root.onRecord.listen((record) {
-      final redacted = redact(record.message);
       // ignore: avoid_print
-      print('[${record.level.name}] ${record.loggerName}: $redacted');
+      print(formatRecord(record));
     });
   }
 
@@ -45,9 +44,34 @@ class AppLogger {
         '($fragment\\s*[:=]\\s*)([^,}]+)',
         caseSensitive: false,
       );
-      result = result.replaceAllMapped(pattern, (m) => '${m[1]}<redacted>');
+      result = result.replaceAllMapped(pattern, (match) {
+        return '${match[1]}<redacted>';
+      });
     }
+
+    result = result.replaceAll(
+      RegExp(r'\bBearer\s+[^\s,}]+', caseSensitive: false),
+      'Bearer <redacted>',
+    );
     return result;
+  }
+
+  /// Formats the complete record, including sanitized error and stack trace,
+  /// so diagnostic context is retained without leaking credentials.
+  static String formatRecord(pkg.LogRecord record) {
+    final buffer = StringBuffer(
+      '[${record.level.name}] ${record.loggerName}: '
+      '${redact(record.message)}',
+    );
+
+    if (record.error != null) {
+      buffer.write('\nError: ${redact(record.error.toString())}');
+    }
+    if (record.stackTrace != null) {
+      buffer.write('\nStack trace:\n${redact(record.stackTrace.toString())}');
+    }
+
+    return buffer.toString();
   }
 
   void debug(String message) => _logger.fine(message);

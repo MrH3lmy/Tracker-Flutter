@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,18 +13,17 @@ class AppRoutes {
   static const home = '/';
 }
 
-/// [routerProvider] rebuilds the [GoRouter] if [sessionStatusProvider]
-/// changes, so once the authentication epic replaces that provider with a
-/// real session controller, guarded routes redirect automatically without
-/// further router changes.
+/// A stable router instance whose redirect logic is refreshed when session
+/// state changes. Recreating [GoRouter] on every authentication transition
+/// would discard navigation state and could leak the previous router.
 final routerProvider = Provider<GoRouter>((ref) {
-  ref.watch(sessionStatusProvider);
-
-  return GoRouter(
+  final refreshNotifier = _RouterRefreshNotifier(ref);
+  final router = GoRouter(
     initialLocation: AppRoutes.home,
+    refreshListenable: refreshNotifier,
     // Single choke point for route guarding: every route is currently
-    // public, so `status` isn't branched on yet, but every navigation
-    // already passes through here.
+    // public, so the placeholder status is only read for now. Epic #3 will
+    // add the authenticated/unauthenticated redirects here.
     redirect: (context, state) {
       ref.read(sessionStatusProvider);
       return null;
@@ -42,4 +42,19 @@ final routerProvider = Provider<GoRouter>((ref) {
     errorBuilder: (context, state) =>
         NotFoundScreen(message: "No page matches '${state.uri}'."),
   );
+
+  ref.onDispose(() {
+    router.dispose();
+    refreshNotifier.dispose();
+  });
+
+  return router;
 });
+
+class _RouterRefreshNotifier extends ChangeNotifier {
+  _RouterRefreshNotifier(Ref ref) {
+    ref.listen<SessionStatus>(sessionStatusProvider, (previous, next) {
+      notifyListeners();
+    });
+  }
+}
