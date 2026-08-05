@@ -52,8 +52,7 @@ class AppConfig {
     String apiBaseUrl,
   ) {
     final uri = Uri.tryParse(apiBaseUrl);
-    final supportedScheme =
-        uri?.scheme == 'http' || uri?.scheme == 'https';
+    final supportedScheme = uri?.scheme == 'http' || uri?.scheme == 'https';
 
     if (uri == null || !uri.hasScheme || !uri.hasAuthority || !supportedScheme) {
       throw FormatException(

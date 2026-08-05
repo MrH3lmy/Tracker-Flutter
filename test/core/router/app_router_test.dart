@@ -8,15 +8,18 @@ import 'package:tracker_flutter/core/router/session_status.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('router instance stays stable when session state is invalidated', () async {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
+  test(
+    'router instance stays stable when session state is invalidated',
+    () async {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
 
-    final router = container.read(routerProvider);
+      final router = container.read(routerProvider);
 
-    container.invalidate(sessionStatusProvider);
-    await Future<void>.delayed(Duration.zero);
+      container.invalidate(sessionStatusProvider);
+      await Future<void>.delayed(Duration.zero);
 
-    expect(identical(container.read(routerProvider), router), isTrue);
-  });
+      expect(identical(container.read(routerProvider), router), isTrue);
+    },
+  );
 }
