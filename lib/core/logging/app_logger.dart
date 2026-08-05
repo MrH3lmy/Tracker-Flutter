@@ -41,7 +41,7 @@ class AppLogger {
     var result = input;
     for (final fragment in _sensitiveKeyFragments) {
       final pattern = RegExp(
-        '($fragment\\s*[:=]\\s*)([^,}]+)',
+        '($fragment\\s*[:=]\\s*)([^,}\\r\\n]+)',
         caseSensitive: false,
       );
       result = result.replaceAllMapped(pattern, (match) {
