@@ -90,7 +90,7 @@ void main() {
 
   test('getPaginated rejects a non-array response body', () async {
     final adapter = FakeHttpClientAdapter(
-      (options, call) => jsonResponseBody({'items': []}),
+      (options, call) => jsonResponseBody({'items': <dynamic>[]}),
     );
     final client = buildClient(adapter);
 
