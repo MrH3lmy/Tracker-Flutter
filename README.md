@@ -6,10 +6,14 @@ Targets: Android, iOS, Web, Windows, macOS, Linux.
 
 ## Status
 
-This repository currently contains the **bootstrap foundation** ([#1][epic1]): project scaffolding, architecture, DI, routing, theming, environment configuration, and CI. It intentionally does not yet include:
+This repository currently contains:
 
-- A real networking layer with auth/refresh/pagination — [#2][epic2]
-- Authentication and secure session storage — [#3][epic3]
+- The **bootstrap foundation** ([#1][epic1] — closed): project scaffolding, architecture, DI, routing, theming, environment configuration, and CI.
+- The **authenticated API and networking layer** ([#2][epic2]): a `Dio`-based `ApiClient`, single-flight token refresh, retry/backoff, pagination-header parsing, connectivity-aware offline detection, and credential-redacting logging.
+
+It intentionally does not yet include:
+
+- Real authentication and secure session storage — [#3][epic3]. `AuthSession` (`core/network/auth/auth_session.dart`) is the seam: its `NullAuthSession` placeholder is swapped for a real implementation without touching the networking layer.
 - Business features (projects, boards, tasks, notes, attachments, settings) — [#4][epic4]
 
 Those are tracked as separate epics that build on this foundation.
@@ -59,7 +63,7 @@ Feature-first structure — each feature owns its own data/domain/presentation c
 lib/
   core/            # cross-cutting foundations, shared by every feature
     config/        # AppEnvironment, AppConfig (--dart-define based, no secrets)
-    di/            # Riverpod providers wiring config/logging into the app
+    di/            # Riverpod providers wiring config/logging/network into the app
     error/         # AppFailure — the shared failure taxonomy
     result/        # Result<T> — the shared success/failure return type
     logging/       # AppLogger — redacts credentials before anything is logged
@@ -67,6 +71,7 @@ lib/
     theme/         # design tokens + light/dark ThemeData
     utils/         # breakpoints and other small shared helpers
     widgets/       # AdaptiveScaffold, AsyncStateView (loading/empty/error/data)
+    network/       # ApiClient, interceptors, pagination, connectivity (see below)
   features/
     shell/         # authenticated app shell (adaptive navigation chrome)
     home/          # placeholder screen demonstrating the provider -> AsyncStateView pattern
@@ -86,9 +91,20 @@ lib/
 
 **Logging**: `AppLogger` wraps `package:logging` and redacts passwords, tokens, cookies, and authorization headers before anything reaches a sink — verified by `test/core/logging/app_logger_test.dart`.
 
+**Networking** (`core/network/`): feature repositories depend on `ApiClient` (`api_client.dart`), never on `Dio` directly. Every method returns `Result<T>` — nothing throws.
+
+- `interceptors/auth_header_interceptor.dart` injects the bearer token from `AuthSession` unless a request opts out with `RequestPolicy(skipAuth: true)`.
+- `interceptors/refresh_interceptor.dart` coalesces concurrent `401`s into one `AuthSession.refreshAccessToken()` call, replays the waiting requests exactly once each, and calls `forceSignOut()` when refresh can't recover the session. See its doc comment for the concurrency/loop-prevention argument.
+- `interceptors/retry_interceptor.dart` retries only timeouts/`5xx`/`429`, and only when the request is idempotent (GET/HEAD by default) or explicitly marked `RequestPolicy(retryable: true)` — a flaky network can't turn one write into two.
+- `interceptors/redacting_log_interceptor.dart` logs through `AppLogger`; bodies are only logged outside production, and `FormData` is always summarized by field name, never by content.
+- `pagination/page_meta.dart` parses Tracker-BE's `X-Total-Count` / `X-Total-Pages` / `X-Page` / `X-Page-Size` / `X-Has-Next` headers into `PageMeta`; `ApiClient.getPaginated` returns a `PaginatedResult<T>` — there is no "load everything" path.
+- `connectivity/connectivity_service.dart` reports network *presence*, not reachability; `ApiClient` uses it only to tell `OfflineFailure` (no interface at all) apart from `NetworkFailure` (an interface is up but the server didn't respond).
+- `errors/dio_failure_mapper.dart` maps every `DioException` onto `AppFailure` — features never see `DioException`.
+- `auth/auth_session.dart` is the seam for the authentication epic: `AuthSession` is an interface: `accessToken`, `refreshAccessToken()`, `forceSignOut()`. `NullAuthSession` is the placeholder binding today.
+
 ## Testing
 
-- `test/core/**` — unit tests for `Result`, `AppConfig`, `AppLogger` redaction, breakpoints.
+- `test/core/**` — unit tests for `Result`, `AppConfig`, `AppLogger` redaction, breakpoints, and the full networking layer (mapper, pagination parsing, request policy, connectivity classification, and each interceptor's behavior against a fake `HttpClientAdapter` — including concurrent-401 single-flight refresh and non-idempotent no-auto-retry).
 - `test/widget/**` — widget tests for `AdaptiveScaffold` and an app-level smoke test (launch → home screen; unknown route → not-found screen).
 - `integration_test/app_test.dart` — end-to-end launch smoke test; feature epics add their own flows here (e.g. login → select project → browse tasks) rather than replacing it.
 
