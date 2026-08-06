@@ -25,19 +25,18 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
 
-  // Interceptor order matters. Dio runs request-phase interceptors in list
-  // order but response/error-phase interceptors in *reverse* list order —
-  // adding the logger first means its onResponse/onError runs *last*, after
-  // auth/refresh/retry have already resolved or given up, so it always logs
-  // the final outcome rather than an intermediate retry attempt.
+  // Dio executes interceptors in registration order. Authentication,
+  // refresh, and retry must therefore run before the logger so the logger
+  // observes the final resolved response/error rather than an intermediate
+  // 401 or transient failure.
   dio.interceptors.addAll([
+    AuthHeaderInterceptor(ref),
+    RefreshInterceptor(dio, ref),
+    RetryInterceptor(dio),
     RedactingLogInterceptor(
       ref.watch(loggerProvider('network')),
       logBodies: config.enableVerboseLogging,
     ),
-    AuthHeaderInterceptor(ref),
-    RefreshInterceptor(dio, ref),
-    RetryInterceptor(dio),
   ]);
 
   ref.onDispose(dio.close);

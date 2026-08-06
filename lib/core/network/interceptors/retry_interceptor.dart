@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 
 import '../errors/dio_failure_mapper.dart';
@@ -7,6 +9,10 @@ import '../request_policy.dart';
 /// else, and never a request that isn't idempotent or explicitly marked
 /// `retryable` via [RequestPolicy], so a flaky network can't turn one
 /// "create task" tap into two tasks.
+///
+/// One-shot request bodies such as [FormData] and [Stream] are never replayed
+/// automatically because Dio cannot safely resend them after they have been
+/// finalized or consumed.
 ///
 /// [delay] is injectable so tests don't have to wait out real backoff
 /// timers.
@@ -35,6 +41,7 @@ class RetryInterceptor extends Interceptor {
 
     if (!_isRetryableFailure(err) ||
         !options.isSafeToRetry ||
+        !_hasReplayableBody(options.data) ||
         attempt >= maxAttempts) {
       handler.next(err);
       return;
@@ -68,6 +75,9 @@ class RetryInterceptor extends Interceptor {
         return false;
     }
   }
+
+  bool _hasReplayableBody(Object? data) =>
+      data is! FormData && data is! Stream<dynamic>;
 
   Duration _delayFor(DioException err, int attempt) {
     final retryAfter = extractRetryAfter(err.response);

@@ -17,7 +17,7 @@ void main() {
     final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
       ..httpClientAdapter = adapter;
     dio.interceptors.add(
-      RetryInterceptor(dio, delay: (d) async => delays.add(d)),
+      RetryInterceptor(dio, delay: (duration) async => delays.add(duration)),
     );
 
     final response = await dio.get<dynamic>('/tasks');
@@ -41,34 +41,49 @@ void main() {
       throwsA(isA<DioException>()),
     );
 
-    expect(
-      adapter.callCount,
-      1,
-      reason: 'a non-idempotent request must not auto-retry',
-    );
+    expect(adapter.callCount, 1);
   });
 
-  test(
-    'a request explicitly marked retryable is retried even if not idempotent',
-    () async {
-      final adapter = FakeHttpClientAdapter((options, call) {
-        if (call == 1) return jsonResponseBody({}, statusCode: 503);
-        return jsonResponseBody({'ok': true});
-      });
-      final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
-        ..httpClientAdapter = adapter;
-      dio.interceptors.add(RetryInterceptor(dio, delay: (_) async {}));
+  test('retries an explicitly approved non-idempotent request', () async {
+    final adapter = FakeHttpClientAdapter((options, call) {
+      if (call == 1) return jsonResponseBody({}, statusCode: 503);
+      return jsonResponseBody({'ok': true});
+    });
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
+      ..httpClientAdapter = adapter;
+    dio.interceptors.add(RetryInterceptor(dio, delay: (_) async {}));
 
-      final response = await dio.post<dynamic>(
-        '/tasks',
-        data: {'title': 'x'},
+    final response = await dio.post<dynamic>(
+      '/tasks',
+      data: {'title': 'x'},
+      options: const RequestPolicy(retryable: true).toOptions(),
+    );
+
+    expect(response.data, {'ok': true});
+    expect(adapter.callCount, 2);
+  });
+
+  test('does not retry one-shot FormData bodies', () async {
+    final adapter = FakeHttpClientAdapter(
+      (options, call) => jsonResponseBody({}, statusCode: 503),
+    );
+    final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
+      ..httpClientAdapter = adapter;
+    dio.interceptors.add(RetryInterceptor(dio, delay: (_) async {}));
+
+    await expectLater(
+      () => dio.post<dynamic>(
+        '/attachments',
+        data: FormData.fromMap({
+          'file': MultipartFile.fromBytes([1, 2, 3], filename: 'file.bin'),
+        }),
         options: const RequestPolicy(retryable: true).toOptions(),
-      );
+      ),
+      throwsA(isA<DioException>()),
+    );
 
-      expect(response.data, {'ok': true});
-      expect(adapter.callCount, 2);
-    },
-  );
+    expect(adapter.callCount, 1);
+  });
 
   test('respects Retry-After on a 429', () async {
     final delays = <Duration>[];
@@ -87,7 +102,7 @@ void main() {
     final dio = Dio(BaseOptions(baseUrl: 'https://api.test'))
       ..httpClientAdapter = adapter;
     dio.interceptors.add(
-      RetryInterceptor(dio, delay: (d) async => delays.add(d)),
+      RetryInterceptor(dio, delay: (duration) async => delays.add(duration)),
     );
 
     final response = await dio.get<dynamic>('/tasks');
@@ -111,7 +126,7 @@ void main() {
       throwsA(isA<DioException>()),
     );
 
-    expect(adapter.callCount, 3); // initial attempt + 2 retries
+    expect(adapter.callCount, 3);
   });
 
   test('does not retry a non-retryable client error like 404', () async {

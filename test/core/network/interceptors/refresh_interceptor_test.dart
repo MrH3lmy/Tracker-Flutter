@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker_flutter/core/network/auth/auth_session.dart';
 import 'package:tracker_flutter/core/network/interceptors/refresh_interceptor.dart';
+import 'package:tracker_flutter/core/network/request_policy.dart';
 
 import '../../../helpers/fake_auth_session.dart';
 import '../../../helpers/fake_http_client_adapter.dart';
@@ -11,9 +12,6 @@ ResponseBody _unauthorized() =>
     jsonResponseBody({'message': 'Unauthorized'}, statusCode: 401);
 
 void main() {
-  /// Builds a Dio wired with [RefreshInterceptor] bound to a real
-  /// Riverpod [Ref] (obtained the idiomatic way: read a tiny provider that
-  /// constructs the interceptor), backed by [adapter].
   Dio buildDio(FakeAuthSession session, FakeHttpClientAdapter adapter) {
     late Dio dio;
     final container = ProviderContainer(
@@ -43,7 +41,7 @@ void main() {
 
     expect(response.data, {'ok': true});
     expect(session.refreshCalls, 1);
-    expect(adapter.callCount, 2); // initial 401 + one retry
+    expect(adapter.callCount, 2);
   });
 
   test('coalesces concurrent 401s into a single refresh call', () async {
@@ -65,44 +63,69 @@ void main() {
       dio.get<dynamic>('/secure/c'),
     ]);
 
-    expect(responses.every((r) => r.data['ok'] == true), isTrue);
-    expect(
-      session.refreshCalls,
-      1,
-      reason: 'three concurrent 401s must share one refresh',
-    );
-    expect(adapter.callCount, 6); // 3 initial 401s + 3 retries
+    expect(responses.every((response) => response.data['ok'] == true), isTrue);
+    expect(session.refreshCalls, 1);
+    expect(adapter.callCount, 6);
   });
 
-  test(
-    'forces a safe sign-out when refresh cannot recover the session',
-    () async {
-      final session = FakeAuthSession(refreshResult: null);
-      final adapter = FakeHttpClientAdapter((options, call) => _unauthorized());
-      final dio = buildDio(session, adapter);
+  test('forces sign-out when refresh cannot recover the session', () async {
+    final session = FakeAuthSession(refreshResult: null);
+    final adapter = FakeHttpClientAdapter((options, call) => _unauthorized());
+    final dio = buildDio(session, adapter);
 
-      await expectLater(
-        () => dio.get<dynamic>('/secure'),
-        throwsA(
-          isA<DioException>().having(
-            (e) => e.response?.statusCode,
-            'statusCode',
-            401,
-          ),
+    await expectLater(
+      () => dio.get<dynamic>('/secure'),
+      throwsA(
+        isA<DioException>().having(
+          (exception) => exception.response?.statusCode,
+          'statusCode',
+          401,
         ),
-      );
+      ),
+    );
 
-      expect(session.refreshCalls, 1);
-      expect(session.signOutCalls, 1);
-      expect(
-        adapter.callCount,
-        1,
-        reason: 'an unrecoverable session is not retried',
-      );
-    },
-  );
+    expect(session.refreshCalls, 1);
+    expect(session.signOutCalls, 1);
+    expect(adapter.callCount, 1);
+  });
 
-  test('does not loop when the retried request is also unauthorized', () async {
+  test('does not intercept public request 401 responses', () async {
+    final session = FakeAuthSession(refreshResult: 'new-token');
+    final adapter = FakeHttpClientAdapter((options, call) => _unauthorized());
+    final dio = buildDio(session, adapter);
+
+    await expectLater(
+      () => dio.post<dynamic>(
+        '/login',
+        options: const RequestPolicy(skipAuth: true).toOptions(),
+      ),
+      throwsA(isA<DioException>()),
+    );
+
+    expect(session.refreshCalls, 0);
+    expect(session.signOutCalls, 0);
+    expect(adapter.callCount, 1);
+  });
+
+  test('refreshes but does not replay an unsafe write', () async {
+    final session = FakeAuthSession(refreshResult: 'new-token');
+    final adapter = FakeHttpClientAdapter((options, call) {
+      if (call > 1) return jsonResponseBody({'created': true});
+      return _unauthorized();
+    });
+    final dio = buildDio(session, adapter);
+
+    await expectLater(
+      () => dio.post<dynamic>('/tasks', data: {'title': 'Write tests'}),
+      throwsA(isA<DioException>()),
+    );
+
+    expect(session.refreshCalls, 1);
+    expect(session.accessToken, 'new-token');
+    expect(adapter.callCount, 1);
+  });
+
+  test('signs out when the retried request is still unauthorized', () async {
     final session = FakeAuthSession(refreshResult: 'new-token');
     final adapter = FakeHttpClientAdapter((options, call) => _unauthorized());
     final dio = buildDio(session, adapter);
@@ -112,11 +135,8 @@ void main() {
       throwsA(isA<DioException>()),
     );
 
-    expect(
-      session.refreshCalls,
-      1,
-      reason: 'refreshed once, not retried into a loop',
-    );
-    expect(adapter.callCount, 2, reason: 'initial call plus exactly one retry');
+    expect(session.refreshCalls, 1);
+    expect(session.signOutCalls, 1);
+    expect(adapter.callCount, 2);
   });
 }

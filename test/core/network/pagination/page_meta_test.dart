@@ -31,8 +31,8 @@ void main() {
 
       final meta = PageMeta.fromHeaders(headers);
 
-      expect(meta.totalPages, 3); // ceil(25 / 10)
-      expect(meta.hasNext, isTrue); // page 0 of 3 -> more pages remain
+      expect(meta.totalPages, 3);
+      expect(meta.hasNext, isTrue);
     });
 
     test('falls back to zeroed metadata when headers are entirely missing', () {
@@ -51,6 +51,19 @@ void main() {
       final meta = PageMeta.fromHeaders(headers);
 
       expect(meta.totalCount, 0);
+    });
+
+    test('derives hasNext when its header is malformed', () {
+      final headers = Headers.fromMap({
+        'x-total-count': ['25'],
+        'x-page-size': ['10'],
+        'x-page': ['0'],
+        'x-has-next': ['not-a-boolean'],
+      });
+
+      final meta = PageMeta.fromHeaders(headers);
+
+      expect(meta.hasNext, isTrue);
     });
   });
 }

@@ -4,19 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../auth/auth_session.dart';
 import '../request_policy.dart';
 
-/// Coalesces concurrent `401` responses into a single refresh attempt and
-/// replays the requests that were waiting on it, exactly once each.
+/// Coalesces concurrent authenticated `401` responses into a single refresh
+/// attempt and replays only requests whose [RequestPolicy] marks them safe.
 ///
-/// Concurrency: the first `401` starts [AuthSession.refreshAccessToken] and
-/// stores the in-flight future; every `401` that arrives while it's
-/// outstanding awaits that same future instead of starting its own — Dio
-/// invokes `onError` per failing request, so without this, N concurrent
-/// `401`s would trigger N refresh calls.
-///
-/// Loop prevention: a retried request is marked
-/// `tracker.refreshRetried = true` in its extras. If that retry itself
-/// comes back `401`, this interceptor passes it straight through instead
-/// of refreshing again — a request is refreshed-and-replayed at most once.
+/// Public requests (`skipAuth`) and the refresh request itself are never
+/// intercepted. A retried request is marked in `RequestOptions.extra`, so a
+/// second `401` signs the session out instead of entering a refresh loop.
 class RefreshInterceptor extends Interceptor {
   RefreshInterceptor(this._dio, this._ref);
 
@@ -33,28 +26,33 @@ class RefreshInterceptor extends Interceptor {
     ErrorInterceptorHandler handler,
   ) async {
     final requestOptions = err.requestOptions;
+    final policy = requestOptions.policy;
     final isUnauthorized = err.response?.statusCode == 401;
     final alreadyRetried = requestOptions.extra[_retriedKey] == true;
-    final isRefreshCall = requestOptions.policy.isAuthRefreshRequest;
 
-    if (!isUnauthorized || alreadyRetried || isRefreshCall) {
+    if (!isUnauthorized || policy.skipAuth || policy.isAuthRefreshRequest) {
       handler.next(err);
       return;
     }
 
     final session = _ref.read(authSessionProvider);
-    String? newToken;
-    try {
-      newToken = await (_inFlightRefresh ??= _refreshOnce(session));
-    } catch (_) {
-      // AuthSession.refreshAccessToken() is documented not to throw, but a
-      // failing implementation shouldn't crash the interceptor chain — an
-      // unrecoverable session is exactly what forceSignOut() below is for.
-      newToken = null;
+
+    if (alreadyRetried) {
+      await _safeForceSignOut(session);
+      handler.next(err);
+      return;
     }
 
-    if (newToken == null || newToken.isEmpty) {
-      await session.forceSignOut();
+    final newToken = await (_inFlightRefresh ??= _refreshOnce(session));
+    if (newToken == null) {
+      handler.next(err);
+      return;
+    }
+
+    // Refreshing an unsafe write is useful for subsequent requests, but the
+    // original request must not be replayed automatically because its body or
+    // server-side effects may not be safely repeatable.
+    if (!requestOptions.isSafeToRetry) {
       handler.next(err);
       return;
     }
@@ -67,15 +65,34 @@ class RefreshInterceptor extends Interceptor {
       final response = await _dio.fetch<dynamic>(retryOptions);
       handler.resolve(response);
     } on DioException catch (retryError) {
+      // The nested fetch re-enters this interceptor. If it is still
+      // unauthorized, the `alreadyRetried` path signs out safely.
       handler.next(retryError);
     }
   }
 
   Future<String?> _refreshOnce(AuthSession session) async {
     try {
-      return await session.refreshAccessToken();
+      final token = await session.refreshAccessToken();
+      if (token == null || token.isEmpty) {
+        await _safeForceSignOut(session);
+        return null;
+      }
+      return token;
+    } catch (_) {
+      await _safeForceSignOut(session);
+      return null;
     } finally {
       _inFlightRefresh = null;
+    }
+  }
+
+  Future<void> _safeForceSignOut(AuthSession session) async {
+    try {
+      await session.forceSignOut();
+    } catch (_) {
+      // A broken sign-out implementation must not escape the interceptor and
+      // violate ApiClient's Result-returning contract.
     }
   }
 }

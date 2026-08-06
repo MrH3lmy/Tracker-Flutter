@@ -23,12 +23,14 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     RequestPolicy policy = const RequestPolicy(idempotent: true),
     CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
   }) => _send(
     () => _dio.get<dynamic>(
       path,
       queryParameters: queryParameters,
       cancelToken: cancelToken,
       options: policy.toOptions(),
+      onReceiveProgress: onReceiveProgress,
     ),
     decode,
   );
@@ -40,6 +42,8 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     RequestPolicy policy = const RequestPolicy(),
     CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
   }) => _send(
     () => _dio.post<dynamic>(
       path,
@@ -47,6 +51,8 @@ class ApiClient {
       queryParameters: queryParameters,
       cancelToken: cancelToken,
       options: policy.toOptions(),
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
     ),
     decode,
   );
@@ -58,6 +64,8 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     RequestPolicy policy = const RequestPolicy(idempotent: true),
     CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
   }) => _send(
     () => _dio.put<dynamic>(
       path,
@@ -65,6 +73,8 @@ class ApiClient {
       queryParameters: queryParameters,
       cancelToken: cancelToken,
       options: policy.toOptions(),
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
     ),
     decode,
   );
@@ -76,6 +86,8 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     RequestPolicy policy = const RequestPolicy(),
     CancelToken? cancelToken,
+    ProgressCallback? onSendProgress,
+    ProgressCallback? onReceiveProgress,
   }) => _send(
     () => _dio.patch<dynamic>(
       path,
@@ -83,6 +95,8 @@ class ApiClient {
       queryParameters: queryParameters,
       cancelToken: cancelToken,
       options: policy.toOptions(),
+      onSendProgress: onSendProgress,
+      onReceiveProgress: onReceiveProgress,
     ),
     decode,
   );
@@ -105,6 +119,38 @@ class ApiClient {
     decode,
   );
 
+  /// Downloads a binary response into memory. Feature/platform layers decide
+  /// where and how to persist it, which keeps this API usable on Web and all
+  /// native targets.
+  Future<Result<List<int>>> getBytes(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+    RequestPolicy policy = const RequestPolicy(idempotent: true),
+    CancelToken? cancelToken,
+    ProgressCallback? onReceiveProgress,
+  }) async {
+    try {
+      final response = await _dio.get<List<int>>(
+        path,
+        queryParameters: queryParameters,
+        cancelToken: cancelToken,
+        options: policy.toOptions(
+          base: Options(responseType: ResponseType.bytes),
+        ),
+        onReceiveProgress: onReceiveProgress,
+      );
+      final data = response.data;
+      if (data == null) {
+        throw const FormatException('Expected a binary response body.');
+      }
+      return Result.success(List<int>.unmodifiable(data));
+    } on DioException catch (exception) {
+      return Result.failure(await _mapFailure(exception));
+    } catch (exception) {
+      return Result.failure(UnknownFailure(cause: exception));
+    }
+  }
+
   /// Fetches one bounded page and parses Tracker-BE's pagination headers —
   /// there is no "load everything" path by design.
   Future<Result<PaginatedResult<T>>> getPaginated<T>(
@@ -121,9 +167,13 @@ class ApiClient {
         options: const RequestPolicy(idempotent: true).toOptions(),
       );
       final raw = response.data;
-      final items = (raw is List ? raw : const <dynamic>[])
-          .map(decodeItem)
-          .toList(growable: false);
+      if (raw is! List) {
+        throw FormatException(
+          'Expected a JSON array for a paginated response, '
+          'received ${raw.runtimeType}.',
+        );
+      }
+      final items = raw.map(decodeItem).toList(growable: false);
       final meta = PageMeta.fromHeaders(response.headers);
       return Result.success(PaginatedResult(items: items, meta: meta));
     } on DioException catch (exception) {
@@ -153,12 +203,17 @@ class ApiClient {
   /// [NetworkFailure] (the server, not the device, is the likely problem).
   Future<AppFailure> _mapFailure(DioException exception) async {
     if (exception.type == DioExceptionType.connectionError) {
-      final hasNetwork = await _connectivity.hasNetworkPresence;
-      if (!hasNetwork) {
-        return OfflineFailure(
-          message: "You're offline. Check your connection and try again.",
-          cause: exception,
-        );
+      try {
+        final hasNetwork = await _connectivity.hasNetworkPresence;
+        if (!hasNetwork) {
+          return OfflineFailure(
+            message: "You're offline. Check your connection and try again.",
+            cause: exception,
+          );
+        }
+      } catch (_) {
+        // Connectivity is only a refinement signal. If its platform channel
+        // fails, preserve the original network failure instead of throwing.
       }
     }
     return mapDioExceptionToFailure(exception);

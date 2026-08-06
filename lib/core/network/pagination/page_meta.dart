@@ -44,7 +44,10 @@ abstract class PageMeta with _$PageMeta {
 
   static bool _bool(Headers headers, String key, bool fallback) {
     final raw = headers.value(key)?.trim().toLowerCase();
-    if (raw == null) return fallback;
-    return raw == 'true' || raw == '1';
+    return switch (raw) {
+      'true' || '1' => true,
+      'false' || '0' => false,
+      _ => fallback,
+    };
   }
 }
