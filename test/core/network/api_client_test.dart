@@ -17,10 +17,7 @@ void main() {
       ..httpClientAdapter = adapter;
     return ApiClient(
       dio,
-      FakeConnectivityService(
-        hasNetwork: hasNetwork,
-        error: connectivityError,
-      ),
+      FakeConnectivityService(hasNetwork: hasNetwork, error: connectivityError),
     );
   }
 
@@ -120,10 +117,7 @@ void main() {
     final result = await client.getBytes('/attachments/1');
 
     expect(result.valueOrNull, [1, 2, 3]);
-    expect(
-      () => result.valueOrNull!.add(4),
-      throwsA(isA<UnsupportedError>()),
-    );
+    expect(() => result.valueOrNull!.add(4), throwsA(isA<UnsupportedError>()));
   });
 
   test('a connection error with no network reports OfflineFailure', () async {
@@ -160,28 +154,22 @@ void main() {
     },
   );
 
-  test(
-    'connectivity lookup failures preserve the Result contract',
-    () async {
-      final adapter = FakeHttpClientAdapter((options, call) {
-        throw DioException(
-          requestOptions: options,
-          type: DioExceptionType.connectionError,
-        );
-      });
-      final client = buildClient(
-        adapter,
-        connectivityError: StateError('platform channel unavailable'),
+  test('connectivity lookup failures preserve the Result contract', () async {
+    final adapter = FakeHttpClientAdapter((options, call) {
+      throw DioException(
+        requestOptions: options,
+        type: DioExceptionType.connectionError,
       );
+    });
+    final client = buildClient(
+      adapter,
+      connectivityError: StateError('platform channel unavailable'),
+    );
 
-      final result = await client.get<dynamic>(
-        '/tasks',
-        decode: (data) => data,
-      );
+    final result = await client.get<dynamic>('/tasks', decode: (data) => data);
 
-      expect(result.failureOrNull, isA<NetworkFailure>());
-    },
-  );
+    expect(result.failureOrNull, isA<NetworkFailure>());
+  });
 
   test('a cancelled request reports CancelledFailure', () async {
     final adapter = FakeHttpClientAdapter((options, call) {
