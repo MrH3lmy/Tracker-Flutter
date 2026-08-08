@@ -13,7 +13,6 @@ This repository currently contains:
 - **Real authentication and secure session storage** ([#3][epic3]): login/registration, an explicit session state machine, OS-backed secure refresh-token storage on native platforms, cookie-based sessions on web, startup session restoration, and logout/logout-all. See [Authentication](#authentication) below.
 
 It intentionally does not yet include:
-
 - Business features (projects, boards, tasks, notes, attachments, settings) — [#4][epic4]
 
 Those are tracked as separate epics that build on this foundation.
@@ -115,7 +114,6 @@ lib/
 - `presentation/` — `SplashScreen` (shown during `unknown`), `SignInScreen`, `RegisterScreen`.
 
 Session restoration runs once at startup (`AuthRepository.build()`); routes are held on the splash screen via the router redirect until it resolves, so no protected screen can flash before the session is known.
-
 ## Testing
 
 - `test/core/**` — unit tests for `Result`, `AppConfig`, `AppLogger` redaction, breakpoints, and the full networking layer (mapper, pagination parsing, request policy, connectivity classification, and each interceptor's behavior against a fake `HttpClientAdapter` — including concurrent-401 single-flight refresh and non-idempotent no-auto-retry).
