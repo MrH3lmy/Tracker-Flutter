@@ -58,12 +58,8 @@ class ProjectsController extends AsyncNotifier<List<Project>> {
   }
 }
 
-final projectsControllerProvider =
-    AsyncNotifierProvider.family.autoDispose<
-      ProjectsController,
-      List<Project>,
-      int
-    >(
+final projectsControllerProvider = AsyncNotifierProvider.family
+    .autoDispose<ProjectsController, List<Project>, int>(
       ProjectsController.new,
       // ProjectsController.build()/refresh() throw AppFailure for
       // ordinary, expected outcomes (offline, 401, 5xx) — not unexpected

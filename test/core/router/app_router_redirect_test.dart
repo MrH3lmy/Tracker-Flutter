@@ -4,13 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker_flutter/core/config/app_config.dart';
 import 'package:tracker_flutter/core/config/app_environment.dart';
 import 'package:tracker_flutter/core/di/app_providers.dart';
-import 'package:tracker_flutter/core/error/app_failure.dart';
 import 'package:tracker_flutter/core/result/result.dart';
 import 'package:tracker_flutter/core/router/app_router.dart';
 import 'package:tracker_flutter/core/router/session_status.dart';
 import 'package:tracker_flutter/features/auth/data/auth_api.dart';
+import 'package:tracker_flutter/features/auth/data/auth_result.dart';
 import 'package:tracker_flutter/features/auth/data/client_platform.dart';
 import 'package:tracker_flutter/features/auth/data/secure_token_storage.dart';
+import 'package:tracker_flutter/features/auth/domain/user.dart';
 import 'package:tracker_flutter/features/projects/data/project_selection_store.dart';
 import 'package:tracker_flutter/features/projects/data/projects_repository.dart';
 import 'package:tracker_flutter/src/app.dart';
@@ -20,6 +21,14 @@ import '../../helpers/fake_project_selection_store.dart';
 import '../../helpers/fake_projects_repository.dart';
 import '../../helpers/fake_secure_token_storage.dart';
 
+const _user = User(
+  id: 1,
+  email: 'a@b.com',
+  displayName: null,
+  tier: UserTier.free,
+  role: UserRole.user,
+);
+
 void main() {
   Widget app(SessionStatus status) => ProviderScope(
     overrides: [
@@ -28,13 +37,23 @@ void main() {
       ),
       sessionStatusProvider.overrideWithValue(status),
       // An `authenticated` status renders the shell -> ProjectsScreen,
-      // which reaches authRepositoryProvider/projectsRepositoryProvider
-      // regardless of the sessionStatus override above.
+      // which scopes its project provider to authRepositoryProvider's
+      // user id regardless of the sessionStatus override above — a
+      // stored native token makes AuthRepository authenticate on startup
+      // without an explicit login call.
       authApiProvider.overrideWithValue(
         FakeAuthApi()
-          ..refreshResult = const Result.failure(UnauthorizedFailure()),
+          ..refreshResult = Result.success(
+            const AuthResult(
+              accessToken: 'access',
+              refreshToken: 'refresh',
+              user: _user,
+            ),
+          ),
       ),
-      secureTokenStorageProvider.overrideWithValue(FakeSecureTokenStorage()),
+      secureTokenStorageProvider.overrideWithValue(
+        FakeSecureTokenStorage(initialToken: 'stored-token'),
+      ),
       clientPlatformProvider.overrideWithValue(ClientPlatform.android),
       projectSelectionStoreProvider.overrideWithValue(
         FakeProjectSelectionStore(),

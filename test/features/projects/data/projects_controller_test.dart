@@ -48,10 +48,7 @@ void main() {
     built.repo.fetchResult = const Result.success([]);
     keepAlive(built.container);
 
-    expect(
-      built.container.read(provider),
-      isA<AsyncLoading<List<Project>>>(),
-    );
+    expect(built.container.read(provider), isA<AsyncLoading<List<Project>>>());
   });
 
   test('a successful load exposes the projects as AsyncData', () async {
@@ -62,10 +59,7 @@ void main() {
     final projects = await built.container.read(provider.future);
 
     expect(projects, hasLength(2));
-    expect(
-      built.container.read(provider),
-      isA<AsyncData<List<Project>>>(),
-    );
+    expect(built.container.read(provider), isA<AsyncData<List<Project>>>());
   });
 
   test('an empty backend list surfaces as an empty AsyncData', () async {
