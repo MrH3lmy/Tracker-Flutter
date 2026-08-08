@@ -146,4 +146,41 @@ void main() {
       hasLength(2),
     );
   });
+
+  test(
+    "an older in-flight refresh() does not clobber a newer one's result",
+    () async {
+      final built = build();
+      built.repo.fetchResult = Result.success([_project(1)]);
+      await built.container.read(projectsControllerProvider.future);
+      final controller = built.container.read(
+        projectsControllerProvider.notifier,
+      );
+
+      final firstCompleter = Completer<Result<List<Project>>>();
+      built.repo.fetchResultFuture = firstCompleter.future;
+      final firstRefresh = controller.refresh();
+
+      final secondCompleter = Completer<Result<List<Project>>>();
+      built.repo.fetchResultFuture = secondCompleter.future;
+      final secondRefresh = controller.refresh();
+
+      // The second (newer) request resolves first...
+      secondCompleter.complete(Result.success([_project(1), _project(2)]));
+      await secondRefresh;
+      expect(
+        built.container.read(projectsControllerProvider).value,
+        hasLength(2),
+      );
+
+      // ...and the first (older, slower) request resolving afterwards must
+      // not overwrite it with stale data.
+      firstCompleter.complete(Result.success([_project(1)]));
+      await firstRefresh;
+      expect(
+        built.container.read(projectsControllerProvider).value,
+        hasLength(2),
+      );
+    },
+  );
 }

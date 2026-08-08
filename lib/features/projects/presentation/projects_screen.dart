@@ -19,16 +19,28 @@ class ProjectsScreen extends ConsumerWidget {
     // longer resolves against it (deletion, lost access, or a stale id
     // restored from a previous session) — a side effect, so it belongs in
     // ref.listen rather than in the build method below.
-    ref.listen<AsyncValue<List<Project>>>(projectsControllerProvider, (
-      previous,
-      next,
-    ) {
-      next.whenData((projects) {
-        ref
-            .read(selectedProjectControllerProvider.notifier)
-            .pruneIfMissing(projects.map((p) => p.id).toSet());
-      });
-    });
+    //
+    // Both the project list (a network fetch) and the selection (a
+    // SharedPreferences read via SelectedProjectController's restoration)
+    // load asynchronously and independently, so either can settle first:
+    // listening only to the project list would miss pruning a selection
+    // that gets restored *after* the list already loaded.
+    void pruneAgainstCurrentList() {
+      final projects = ref.read(projectsControllerProvider).value;
+      if (projects == null) return;
+      ref
+          .read(selectedProjectControllerProvider.notifier)
+          .pruneIfMissing(projects.map((Project p) => p.id).toSet());
+    }
+
+    ref.listen<AsyncValue<List<Project>>>(
+      projectsControllerProvider,
+      (previous, next) => pruneAgainstCurrentList(),
+    );
+    ref.listen<int?>(
+      selectedProjectControllerProvider,
+      (previous, next) => pruneAgainstCurrentList(),
+    );
 
     return AsyncStateView<List<Project>>(
       value: projectsAsync,
@@ -74,13 +86,18 @@ class _ProjectList extends StatelessWidget {
     // Tracker-BE doesn't guarantee an ordering for this endpoint (see
     // ProjectsRepository's doc comment), so this is a client-side choice
     // for a stable, predictable list rather than following a backend
-    // contract that doesn't exist.
-    final sorted = [...projects]
-      ..sort(
-        (a, b) => a.name.toLowerCase() == b.name.toLowerCase()
-            ? a.id.compareTo(b.id)
-            : a.name.toLowerCase().compareTo(b.name.toLowerCase()),
-      );
+    // contract that doesn't exist. Sort keys are computed once per project
+    // rather than inside the comparator, which sort() calls O(n log n)
+    // times.
+    final sorted =
+        [
+          for (final project in projects)
+            (key: project.name.toLowerCase(), project: project),
+        ]..sort(
+          (a, b) => a.key == b.key
+              ? a.project.id.compareTo(b.project.id)
+              : a.key.compareTo(b.key),
+        );
 
     return RefreshIndicator(
       onRefresh: onRefresh,
@@ -96,7 +113,7 @@ class _ProjectList extends StatelessWidget {
             separatorBuilder: (context, index) =>
                 const SizedBox(height: AppSpacing.xs),
             itemBuilder: (context, index) {
-              final project = sorted[index];
+              final project = sorted[index].project;
               return _ProjectTile(
                 project: project,
                 selected: project.id == selectedId,

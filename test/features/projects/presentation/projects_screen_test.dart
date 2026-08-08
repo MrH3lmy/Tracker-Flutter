@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker_flutter/core/error/app_failure.dart';
 import 'package:tracker_flutter/core/result/result.dart';
 import 'package:tracker_flutter/features/auth/data/auth_api.dart';
+import 'package:tracker_flutter/features/auth/data/auth_result.dart';
 import 'package:tracker_flutter/features/auth/data/client_platform.dart';
 import 'package:tracker_flutter/features/auth/data/secure_token_storage.dart';
+import 'package:tracker_flutter/features/auth/domain/user.dart';
 import 'package:tracker_flutter/features/projects/data/project_selection_store.dart';
 import 'package:tracker_flutter/features/projects/data/projects_repository.dart';
+import 'package:tracker_flutter/features/projects/data/selected_project_controller.dart';
 import 'package:tracker_flutter/features/projects/domain/project.dart';
 import 'package:tracker_flutter/features/projects/presentation/projects_screen.dart';
 
@@ -15,6 +20,14 @@ import '../../../helpers/fake_auth_api.dart';
 import '../../../helpers/fake_project_selection_store.dart';
 import '../../../helpers/fake_projects_repository.dart';
 import '../../../helpers/fake_secure_token_storage.dart';
+
+const _user = User(
+  id: 1,
+  email: 'a@b.com',
+  displayName: null,
+  tier: UserTier.free,
+  role: UserRole.user,
+);
 
 Project _project(int id, String name) => Project(
   id: id,
@@ -171,4 +184,61 @@ void main() {
     expect(find.text('Beta'), findsOneWidget);
     expect(repo.fetchCalls, greaterThanOrEqualTo(2));
   });
+
+  testWidgets(
+    'a selection restored after the project list has already loaded is still pruned if stale',
+    (tester) async {
+      final projectsRepo = FakeProjectsRepository()
+        ..fetchResult = Result.success([_project(1, 'Alpha')]);
+      // Seeded with a project id (999) that isn't in the list above — the
+      // stored selection is stale (deleted/inaccessible/left over from a
+      // previous session).
+      final selectionStore = FakeProjectSelectionStore()..seed(_user.id, 999);
+      final storeUnblocked = Completer<void>();
+      selectionStore.readDelay = storeUnblocked.future;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            projectsRepositoryProvider.overrideWithValue(projectsRepo),
+            authApiProvider.overrideWithValue(
+              FakeAuthApi()
+                ..refreshResult = Result.success(
+                  AuthResult(
+                    accessToken: 'access',
+                    refreshToken: 'refresh',
+                    user: _user,
+                  ),
+                ),
+            ),
+            // A stored native token makes AuthRepository authenticate on
+            // startup without an explicit login call.
+            secureTokenStorageProvider.overrideWithValue(
+              FakeSecureTokenStorage(initialToken: 'stored-token'),
+            ),
+            clientPlatformProvider.overrideWithValue(ClientPlatform.android),
+            projectSelectionStoreProvider.overrideWithValue(selectionStore),
+          ],
+          child: const MaterialApp(home: Scaffold(body: ProjectsScreen())),
+        ),
+      );
+
+      // Let sign-in and the project list settle while the selection restore
+      // is still deliberately blocked on storeUnblocked.
+      await tester.pumpAndSettle();
+      expect(find.text('Alpha'), findsOneWidget);
+
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(ProjectsScreen)),
+      );
+      expect(container.read(selectedProjectControllerProvider), isNull);
+
+      // The restoration now delivers the stale id, arriving after the
+      // project list already resolved.
+      storeUnblocked.complete();
+      await tester.pumpAndSettle();
+
+      expect(container.read(selectedProjectControllerProvider), isNull);
+    },
+  );
 }

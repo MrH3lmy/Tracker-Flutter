@@ -11,6 +11,8 @@ import 'projects_repository.dart';
 /// `AppFailure` (thrown, not swallowed) rather than an empty list, so the UI
 /// can distinguish "no projects" from "couldn't load projects".
 class ProjectsController extends AsyncNotifier<List<Project>> {
+  int _requestId = 0;
+
   @override
   Future<List<Project>> build() => _load();
 
@@ -31,11 +33,20 @@ class ProjectsController extends AsyncNotifier<List<Project>> {
   /// [AsyncLoading] — the caller (`RefreshIndicator`, or a retry button)
   /// already renders its own loading affordance, and swapping the whole
   /// list out from under it would just flash content away and back.
+  ///
+  /// Guarded against out-of-order responses: if two calls overlap (e.g. a
+  /// quick double-tap on retry), only the most recently issued call is
+  /// allowed to write [state] — an earlier, slower response arriving last
+  /// must not silently overwrite a newer one.
   Future<void> refresh() async {
+    final requestId = ++_requestId;
     if (!state.hasValue) {
       state = const AsyncValue.loading();
     }
-    state = await AsyncValue.guard(_load);
+    final result = await AsyncValue.guard(_load);
+    if (requestId == _requestId) {
+      state = result;
+    }
   }
 }
 
