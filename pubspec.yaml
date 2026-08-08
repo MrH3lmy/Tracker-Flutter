@@ -41,6 +41,10 @@ dependencies:
   # Structured, redactable logging
   logging: ^1.3.0
 
+  # Non-sensitive local preferences (e.g. the selected-project id) — never
+  # used for tokens/credentials, which stay in flutter_secure_storage.
+  shared_preferences: ^2.5.5
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
