@@ -7,6 +7,8 @@ import 'core/config/app_config.dart';
 import 'core/config/app_environment.dart';
 import 'core/di/app_providers.dart';
 import 'core/logging/app_logger.dart';
+import 'core/network/auth/auth_session.dart';
+import 'features/auth/data/auth_repository.dart';
 import 'src/app.dart';
 
 /// Shared entry point for every flavor (see `main_*.dart`).
@@ -33,7 +35,15 @@ Future<void> bootstrap(AppEnvironment environment) async {
 
       runApp(
         ProviderScope(
-          overrides: [appConfigProvider.overrideWithValue(config)],
+          overrides: [
+            appConfigProvider.overrideWithValue(config),
+            // The authentication epic's real session controller — see
+            // AuthRepository's doc comment for why this is the one place
+            // that wires it in.
+            authSessionProvider.overrideWith(
+              (ref) => ref.watch(authRepositoryProvider.notifier),
+            ),
+          ],
           child: const TrackerApp(),
         ),
       );

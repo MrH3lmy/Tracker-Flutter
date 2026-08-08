@@ -9,11 +9,11 @@ Targets: Android, iOS, Web, Windows, macOS, Linux.
 This repository currently contains:
 
 - The **bootstrap foundation** ([#1][epic1] — closed): project scaffolding, architecture, DI, routing, theming, environment configuration, and CI.
-- The **authenticated API and networking layer** ([#2][epic2]): a `Dio`-based `ApiClient`, single-flight token refresh, retry/backoff, pagination-header parsing, connectivity-aware offline detection, and credential-redacting logging.
+- The **authenticated API and networking layer** ([#2][epic2] — closed): a `Dio`-based `ApiClient`, single-flight token refresh, retry/backoff, pagination-header parsing, connectivity-aware offline detection, and credential-redacting logging.
+- **Real authentication and secure session storage** ([#3][epic3]): login/registration, an explicit session state machine, OS-backed secure refresh-token storage on native platforms, cookie-based sessions on web, startup session restoration, and logout/logout-all. See [Authentication](#authentication) below.
 
 It intentionally does not yet include:
 
-- Real authentication and secure session storage — [#3][epic3]. `AuthSession` (`core/network/auth/auth_session.dart`) is the seam: its `NullAuthSession` placeholder is swapped for a real implementation without touching the networking layer.
 - Business features (projects, boards, tasks, notes, attachments, settings) — [#4][epic4]
 
 Those are tracked as separate epics that build on this foundation.
@@ -73,6 +73,7 @@ lib/
     widgets/       # AdaptiveScaffold, AsyncStateView (loading/empty/error/data)
     network/       # ApiClient, interceptors, pagination, connectivity (see below)
   features/
+    auth/          # login/register/session — see Authentication below
     shell/         # authenticated app shell (adaptive navigation chrome)
     home/          # placeholder screen demonstrating the provider -> AsyncStateView pattern
     not_found/     # unknown-route screen
@@ -83,7 +84,7 @@ lib/
 
 **State management & DI**: Riverpod. Providers are colocated with the feature that owns them; cross-cutting providers (config, logging) live in `core/di`.
 
-**Routing**: GoRouter, with a single `redirect` choke point in `core/router/app_router.dart` that every navigation passes through. `core/router/session_status.dart` is a placeholder — the [authentication epic][epic3] replaces it with a real session state machine without needing further router changes. Unmatched routes render `NotFoundScreen` via `errorBuilder`.
+**Routing**: GoRouter, with a single `redirect` choke point in `core/router/app_router.dart` that every navigation passes through. `core/router/session_status.dart` derives a router-facing `SessionStatus` (`unknown` / `authenticated` / `unauthenticated`) from the real session state in `features/auth`; the redirect holds the app on the splash route while the session is `unknown` (startup restoration in flight), sends unauthenticated users to sign-in, and bounces authenticated users away from sign-in/register. Unmatched routes render `NotFoundScreen` via `errorBuilder`.
 
 **Errors**: data sources return `Result<T>` (`core/result/result.dart`) instead of throwing; failures are one of the `AppFailure` subtypes (`core/error/app_failure.dart`) — network, timeout, offline, unauthorized, validation, conflict, rate-limited, server, cancelled, unknown. `AsyncStateView` (`core/widgets/async_state_view.dart`) renders the loading/empty/error/data states for any `AsyncValue<T>` consistently, including dedicated offline and unauthorized presentations.
 
@@ -100,7 +101,20 @@ lib/
 - `pagination/page_meta.dart` parses Tracker-BE's `X-Total-Count` / `X-Total-Pages` / `X-Page` / `X-Page-Size` / `X-Has-Next` headers into `PageMeta`; `ApiClient.getPaginated` returns a `PaginatedResult<T>` — there is no "load everything" path.
 - `connectivity/connectivity_service.dart` reports network *presence*, not reachability; `ApiClient` uses it only to tell `OfflineFailure` (no interface at all) apart from `NetworkFailure` (an interface is up but the server didn't respond).
 - `errors/dio_failure_mapper.dart` maps every `DioException` onto `AppFailure` — features never see `DioException`.
-- `auth/auth_session.dart` is the seam for the authentication epic: `AuthSession` is an interface: `accessToken`, `refreshAccessToken()`, `forceSignOut()`. `NullAuthSession` is the placeholder binding today.
+- `auth/auth_session.dart` defines the `AuthSession` interface (`accessToken`, `refreshAccessToken()`, `forceSignOut()`) that the interceptors depend on; `features/auth/data/auth_repository.dart`'s `AuthRepository` is the real implementation, bound in `lib/bootstrap.dart`.
+
+## Authentication
+
+`features/auth/` implements Tracker-BE's dual authentication contract (native JSON refresh tokens for Flutter clients, HttpOnly cookies for browsers) against a single `AuthRepository`.
+
+- `domain/session_state.dart` — a sealed `SessionState` models the session as exactly one of `unknown` (startup restoration in flight), `authenticated(user)`, `unauthenticated`, `refreshing(previousUser)`, or `unrecoverable` (secure storage is broken and cannot be trusted). `core/router/session_status.dart` derives the router's 3-state view from this.
+- `data/client_platform.dart` — resolves the running `ClientPlatform` (`web`/`android`/`ios`/`windows`/`macos`/`linux`) from `kIsWeb` and `defaultTargetPlatform`. Web always uses the cookie-based contract; every native target uses the token-based one.
+- `data/secure_token_storage.dart` — `SecureTokenStorage` is the refresh-token persistence seam. `FlutterSecureTokenStorage` wraps `flutter_secure_storage` (Keychain / Keystore / DPAPI) on native platforms; `NoopTokenStorage` is bound on web, since a refresh token must never be reachable from JavaScript — the browser session lives entirely in the HttpOnly cookie Tracker-BE sets. `readRefreshToken()`/`deleteRefreshToken()` are documented to never throw: a corrupted keystore degrades to "no token found," not a crash.
+- `data/auth_api.dart` — talks to Tracker-BE's `/api/v1/auth/**` routes, switching between the native (`/auth/native/*`, JSON refresh token in the body) and web (`/auth/*`, cookie, `withCredentials`) routes based on `ClientPlatform`.
+- `data/auth_repository.dart` — `AuthRepository` (a `Notifier<SessionState>`) implements `AuthSession` and is the single source of truth for the session: startup restoration (reads the stored refresh token on native, or attempts a silent cookie-based refresh on web), `login`/`register`, `refreshAccessToken()` (used by `RefreshInterceptor`'s single-flight refresh — on failure it reports `null` and leaves sign-out to the interceptor, avoiding duplicate state transitions), `forceSignOut()`, and `logout`/`logoutAll` (always clear local session state even if the server-side revoke call fails, since a client that can't reach the network must still be able to sign out). The access token lives in memory only and is never persisted.
+- `presentation/` — `SplashScreen` (shown during `unknown`), `SignInScreen`, `RegisterScreen`.
+
+Session restoration runs once at startup (`AuthRepository.build()`); routes are held on the splash screen via the router redirect until it resolves, so no protected screen can flash before the session is known.
 
 ## Testing
 
