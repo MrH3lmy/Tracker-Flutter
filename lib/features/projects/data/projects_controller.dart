@@ -1,0 +1,54 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../domain/project.dart';
+import 'projects_repository.dart';
+
+/// Loads the current user's projects and exposes them as an [AsyncValue],
+/// so `ProjectsScreen` renders loading/data/error through the shared
+/// `AsyncStateView` like every other feature will.
+///
+/// A failed load surfaces as an [AsyncError] carrying the original
+/// `AppFailure` (thrown, not swallowed) rather than an empty list, so the UI
+/// can distinguish "no projects" from "couldn't load projects".
+class ProjectsController extends AsyncNotifier<List<Project>> {
+  @override
+  Future<List<Project>> build() => _load();
+
+  Future<List<Project>> _load() async {
+    final repository = ref.watch(projectsRepositoryProvider);
+    final result = await repository.fetchProjects();
+    return result.when(
+      success: (projects) => projects,
+      failure: (f) => throw f,
+    );
+  }
+
+  /// Re-fetches. Used by both pull-to-refresh and the error state's retry
+  /// action.
+  ///
+  /// When a previous list is already showing, this deliberately leaves it
+  /// on screen while the new request is in flight instead of switching to
+  /// [AsyncLoading] — the caller (`RefreshIndicator`, or a retry button)
+  /// already renders its own loading affordance, and swapping the whole
+  /// list out from under it would just flash content away and back.
+  Future<void> refresh() async {
+    if (!state.hasValue) {
+      state = const AsyncValue.loading();
+    }
+    state = await AsyncValue.guard(_load);
+  }
+}
+
+final projectsControllerProvider =
+    AsyncNotifierProvider<ProjectsController, List<Project>>(
+      ProjectsController.new,
+      // ProjectsController.build()/refresh() throw AppFailure for
+      // ordinary, expected outcomes (offline, 401, 5xx) — not unexpected
+      // crashes. Riverpod's default retry policy
+      // (ProviderContainer.defaultRetry) treats any thrown non-Error as
+      // transient and silently retries up to 10 times over ~40s before an
+      // AsyncError ever reaches the UI; that's the wrong behavior for a
+      // failure this repository already classified, so retry is disabled
+      // here and left to the explicit `refresh()` action instead.
+      retry: (retryCount, error) => null,
+    );

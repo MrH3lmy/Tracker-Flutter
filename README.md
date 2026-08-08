@@ -10,12 +10,11 @@ This repository currently contains:
 
 - The **bootstrap foundation** ([#1][epic1] — closed): project scaffolding, architecture, DI, routing, theming, environment configuration, and CI.
 - The **authenticated API and networking layer** ([#2][epic2] — closed): a `Dio`-based `ApiClient`, single-flight token refresh, retry/backoff, pagination-header parsing, connectivity-aware offline detection, and credential-redacting logging.
-- **Real authentication and secure session storage** ([#3][epic3]): login/registration, an explicit session state machine, OS-backed secure refresh-token storage on native platforms, cookie-based sessions on web, startup session restoration, and logout/logout-all. See [Authentication](#authentication) below.
+- **Real authentication and secure session storage** ([#3][epic3] — closed): login/registration, an explicit session state machine, OS-backed secure refresh-token storage on native platforms, cookie-based sessions on web, startup session restoration, and logout/logout-all. See [Authentication](#authentication) below.
+- **The first functional release** ([#4][epic4], in progress — shipped as a sequence of vertical slices, not one PR):
+  - Slice 1: the authenticated shell and a Projects list (load, select, refresh, safe selection state). See [Projects](#projects) below.
 
-It intentionally does not yet include:
-- Business features (projects, boards, tasks, notes, attachments, settings) — [#4][epic4]
-
-Those are tracked as separate epics that build on this foundation.
+It intentionally does not yet include boards/columns, tasks, notes, attachments, or settings — those are later slices of the same epic.
 
 [epic1]: https://github.com/MrH3lmy/Tracker-Flutter/issues/1
 [epic2]: https://github.com/MrH3lmy/Tracker-Flutter/issues/2
@@ -74,7 +73,7 @@ lib/
   features/
     auth/          # login/register/session — see Authentication below
     shell/         # authenticated app shell (adaptive navigation chrome)
-    home/          # placeholder screen demonstrating the provider -> AsyncStateView pattern
+    projects/      # project list + selection — see Projects below
     not_found/     # unknown-route screen
   src/app.dart     # MaterialApp.router wiring theme + router together
   bootstrap.dart   # shared startup: error handling, logging init, ProviderScope
@@ -114,11 +113,27 @@ lib/
 - `presentation/` — `SplashScreen` (shown during `unknown`), `SignInScreen`, `RegisterScreen`.
 
 Session restoration runs once at startup (`AuthRepository.build()`); routes are held on the splash screen via the router redirect until it resolves, so no protected screen can flash before the session is known.
+
+## Projects
+
+`features/projects/` is epic #4's first vertical slice: an authenticated shell that loads and lets the user select from their projects, against Tracker-BE's `GET /api/v1/projects` (`ProjectController`/`ProjectService`). That endpoint returns a plain JSON array scoped server-side to the authenticated user — no pagination, no ordering guarantee, and archived projects are included — so this slice doesn't invent any of those on the client side either (see `ProjectsRepository`'s doc comment).
+
+- `domain/project.dart` — `Project` mirrors `ProjectResponse` field-for-field. `ProjectStatus`/`ProjectArea` parsing degrades gracefully for a status/area value this build doesn't recognize yet (`ProjectStatus.unknown` / a `null` area) instead of failing the whole list over one forward-compatible field.
+- `data/projects_repository.dart` — `ProjectsRepository` wraps `ApiClient`; `fetchProjects()` returns `Result<List<Project>>`.
+- `data/projects_controller.dart` — `ProjectsController` (`AsyncNotifier<List<Project>>`) loads the list and exposes `refresh()` for pull-to-refresh/retry, which leaves the previous list on screen while re-fetching rather than flashing back to a loading state. Its provider disables Riverpod's default build-retry (`retry: (retryCount, error) => null`) — an `AppFailure` here is an already-classified, expected outcome (offline, 401, 5xx), not a crash that should be silently retried for up to ~40 seconds before ever reaching the UI.
+- `data/project_selection_store.dart` — `ProjectSelectionStore` persists the selected-project id in ordinary (non-encrypted) local preferences via `shared_preferences`, namespaced per user id. This is a UI convenience, never a credential — refresh tokens stay exclusively in `SecureTokenStorage`. Reads never throw, mirroring that type's contract.
+- `data/selected_project_controller.dart` — `SelectedProjectController` restores the persisted selection once the signed-in user is known, clears it in memory the instant the user id changes (logout/account switch — never a stale frame of the previous account's selection), and exposes `pruneIfMissing()` so a selection that no longer resolves (deletion, lost access, a stale id from a previous session) is dropped once the live project list is known.
+- `presentation/projects_screen.dart` — loading/empty/error/retry via the shared `AsyncStateView`, pull-to-refresh, and project selection with a confirmation snackbar.
+
+`features/shell/presentation/app_shell.dart` hosts the account menu (sign out / sign out everywhere) so it stays available regardless of which destination is active, rather than living on an individual screen.
+
 ## Testing
 
 - `test/core/**` — unit tests for `Result`, `AppConfig`, `AppLogger` redaction, breakpoints, and the full networking layer (mapper, pagination parsing, request policy, connectivity classification, and each interceptor's behavior against a fake `HttpClientAdapter` — including concurrent-401 single-flight refresh and non-idempotent no-auto-retry).
-- `test/widget/**` — widget tests for `AdaptiveScaffold` and an app-level smoke test (launch → home screen; unknown route → not-found screen).
-- `integration_test/app_test.dart` — end-to-end launch smoke test; feature epics add their own flows here (e.g. login → select project → browse tasks) rather than replacing it.
+- `test/features/**` — per-feature unit/widget tests following the `data`/`domain`/`presentation` split (auth and projects).
+- `test/widget/**` — widget tests for `AdaptiveScaffold` and an app-level smoke test (launch → authenticated shell; unknown route → not-found screen).
+- `test/integration/app_flow_test.dart` — a widget-test-level run of the full launch → sign in → authenticated shell → load projects → select project flow, with every provider and screen real except the network boundary (`AuthApi`/`ProjectsRepository`), which is faked since no live Tracker-BE is reachable from a widget test.
+- `integration_test/app_test.dart` — true device/backend end-to-end launch smoke test; feature epics extend `test/integration/app_flow_test.dart` with their own flows (e.g. select project → browse boards) rather than replacing it.
 
 ## Contributing
 
