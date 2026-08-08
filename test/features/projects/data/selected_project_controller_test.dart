@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker_flutter/core/error/app_failure.dart';
@@ -114,6 +116,42 @@ void main() {
   );
 
   test(
+    'a late restoration never overwrites a newer explicit selection',
+    () async {
+      final built = build();
+      built.store.seed(_userA.id, 42);
+      final storeUnblocked = Completer<void>();
+      built.store.readDelay = storeUnblocked.future;
+      await built.container
+          .read(authRepositoryProvider.notifier)
+          .startupRestoration;
+
+      built.authApi.loginResult = const Result.success(
+        AuthResult(
+          accessToken: 'access',
+          refreshToken: 'refresh',
+          user: _userA,
+        ),
+      );
+      await built.container
+          .read(authRepositoryProvider.notifier)
+          .login(email: _userA.email, password: 'password');
+
+      final controller = built.container.read(
+        selectedProjectControllerProvider.notifier,
+      );
+      controller.select(7);
+      expect(built.container.read(selectedProjectControllerProvider), 7);
+
+      storeUnblocked.complete();
+      await controller.restoration;
+
+      expect(built.container.read(selectedProjectControllerProvider), 7);
+      expect(await built.store.readSelectedProjectId(_userA.id), 7);
+    },
+  );
+
+  test(
     'pruneIfMissing clears a selection that is no longer available',
     () async {
       final built = build();
@@ -193,7 +231,7 @@ void main() {
       expect(built.container.read(selectedProjectControllerProvider), isNull);
 
       built.authApi.loginResult = Result.success(
-        AuthResult(
+        const AuthResult(
           accessToken: 'access',
           refreshToken: 'refresh',
           user: _userB,

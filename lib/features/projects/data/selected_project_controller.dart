@@ -22,6 +22,7 @@ import 'project_selection_store.dart';
 class SelectedProjectController extends Notifier<int?> {
   late ProjectSelectionStore _store;
   int? _currentUserId;
+  int _selectionRevision = 0;
   Future<void> _restoration = Future<void>.value();
 
   @override
@@ -36,6 +37,7 @@ class SelectedProjectController extends Notifier<int?> {
     ref.listen<SessionState>(authRepositoryProvider, (previous, next) {
       final newUserId = next.userOrNull?.id;
       if (newUserId == _currentUserId) return;
+      _selectionRevision++;
       _currentUserId = newUserId;
       state = null;
       if (newUserId != null) {
@@ -53,15 +55,18 @@ class SelectedProjectController extends Notifier<int?> {
   Future<void> get restoration => _restoration;
 
   Future<void> _restoreFor(int userId) async {
+    final revision = _selectionRevision;
     final stored = await _store.readSelectedProjectId(userId);
-    // The account may have changed again while this read was in flight;
-    // only apply a result that's still relevant.
-    if (_currentUserId == userId) {
+    // The account or selection may have changed while this read was in
+    // flight. A late persistence read must never overwrite a newer explicit
+    // user selection (or a clear/prune) made after restoration started.
+    if (_currentUserId == userId && _selectionRevision == revision) {
       state = stored;
     }
   }
 
   void select(int projectId) {
+    _selectionRevision++;
     state = projectId;
     final userId = _currentUserId;
     if (userId == null) return;
@@ -69,6 +74,7 @@ class SelectedProjectController extends Notifier<int?> {
   }
 
   void clear() {
+    _selectionRevision++;
     state = null;
     final userId = _currentUserId;
     if (userId == null) return;

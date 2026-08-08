@@ -33,12 +33,23 @@ void main() {
     return (container: container, repo: repo);
   }
 
+  final provider = projectsControllerProvider(7);
+
+  void keepAlive(ProviderContainer container, [int userId = 7]) {
+    final subscription = container.listen(
+      projectsControllerProvider(userId),
+      (previous, next) {},
+    );
+    addTearDown(subscription.close);
+  }
+
   test('starts in AsyncLoading before the fetch resolves', () {
     final built = build();
     built.repo.fetchResult = const Result.success([]);
+    keepAlive(built.container);
 
     expect(
-      built.container.read(projectsControllerProvider),
+      built.container.read(provider),
       isA<AsyncLoading<List<Project>>>(),
     );
   });
@@ -46,14 +57,13 @@ void main() {
   test('a successful load exposes the projects as AsyncData', () async {
     final built = build();
     built.repo.fetchResult = Result.success([_project(1), _project(2)]);
+    keepAlive(built.container);
 
-    final projects = await built.container.read(
-      projectsControllerProvider.future,
-    );
+    final projects = await built.container.read(provider.future);
 
     expect(projects, hasLength(2));
     expect(
-      built.container.read(projectsControllerProvider),
+      built.container.read(provider),
       isA<AsyncData<List<Project>>>(),
     );
   });
@@ -61,10 +71,9 @@ void main() {
   test('an empty backend list surfaces as an empty AsyncData', () async {
     final built = build();
     built.repo.fetchResult = const Result.success([]);
+    keepAlive(built.container);
 
-    final projects = await built.container.read(
-      projectsControllerProvider.future,
-    );
+    final projects = await built.container.read(provider.future);
 
     expect(projects, isEmpty);
   });
@@ -76,12 +85,13 @@ void main() {
       built.repo.fetchResult = const Result.failure(
         ServerFailure(statusCode: 500),
       );
+      keepAlive(built.container);
 
       await expectLater(
-        built.container.read(projectsControllerProvider.future),
+        built.container.read(provider.future),
         throwsA(isA<ServerFailure>()),
       );
-      final state = built.container.read(projectsControllerProvider);
+      final state = built.container.read(provider);
       expect(state, isA<AsyncError<List<Project>>>());
       expect((state as AsyncError<List<Project>>).error, isA<ServerFailure>());
     },
@@ -90,12 +100,13 @@ void main() {
   test('refresh() re-fetches and replaces the list on success', () async {
     final built = build();
     built.repo.fetchResult = Result.success([_project(1)]);
-    await built.container.read(projectsControllerProvider.future);
+    keepAlive(built.container);
+    await built.container.read(provider.future);
 
     built.repo.fetchResult = Result.success([_project(1), _project(2)]);
-    await built.container.read(projectsControllerProvider.notifier).refresh();
+    await built.container.read(provider.notifier).refresh();
 
-    final state = built.container.read(projectsControllerProvider);
+    final state = built.container.read(provider);
     expect(state.value, hasLength(2));
     expect(built.repo.fetchCalls, 2);
   });
@@ -105,15 +116,16 @@ void main() {
     () async {
       final built = build();
       built.repo.fetchResult = const Result.failure(UnauthorizedFailure());
+      keepAlive(built.container);
       await expectLater(
-        built.container.read(projectsControllerProvider.future),
+        built.container.read(provider.future),
         throwsA(isA<UnauthorizedFailure>()),
       );
 
       built.repo.fetchResult = Result.success([_project(1)]);
-      await built.container.read(projectsControllerProvider.notifier).refresh();
+      await built.container.read(provider.notifier).refresh();
 
-      final state = built.container.read(projectsControllerProvider);
+      final state = built.container.read(provider);
       expect(state, isA<AsyncData<List<Project>>>());
       expect(state.value, hasLength(1));
     },
@@ -122,29 +134,25 @@ void main() {
   test('refresh() keeps the previous list visible while re-fetching', () async {
     final built = build();
     built.repo.fetchResult = Result.success([_project(1)]);
-    await built.container.read(projectsControllerProvider.future);
+    keepAlive(built.container);
+    await built.container.read(provider.future);
 
     final refreshCompleter = Completer<Result<List<Project>>>();
     built.repo.fetchResult = null;
     // Swap in a repository whose fetch call blocks so state can be
     // inspected mid-refresh.
-    final controller = built.container.read(
-      projectsControllerProvider.notifier,
-    );
+    final controller = built.container.read(provider.notifier);
     built.repo.fetchResultFuture = refreshCompleter.future;
     final refreshFuture = controller.refresh();
 
     // Still showing the previous data while the new request is pending.
-    final duringRefresh = built.container.read(projectsControllerProvider);
+    final duringRefresh = built.container.read(provider);
     expect(duringRefresh.value, hasLength(1));
 
     refreshCompleter.complete(Result.success([_project(1), _project(2)]));
     await refreshFuture;
 
-    expect(
-      built.container.read(projectsControllerProvider).value,
-      hasLength(2),
-    );
+    expect(built.container.read(provider).value, hasLength(2));
   });
 
   test(
@@ -152,10 +160,9 @@ void main() {
     () async {
       final built = build();
       built.repo.fetchResult = Result.success([_project(1)]);
-      await built.container.read(projectsControllerProvider.future);
-      final controller = built.container.read(
-        projectsControllerProvider.notifier,
-      );
+      keepAlive(built.container);
+      await built.container.read(provider.future);
+      final controller = built.container.read(provider.notifier);
 
       final firstCompleter = Completer<Result<List<Project>>>();
       built.repo.fetchResultFuture = firstCompleter.future;
@@ -168,19 +175,34 @@ void main() {
       // The second (newer) request resolves first...
       secondCompleter.complete(Result.success([_project(1), _project(2)]));
       await secondRefresh;
-      expect(
-        built.container.read(projectsControllerProvider).value,
-        hasLength(2),
-      );
+      expect(built.container.read(provider).value, hasLength(2));
 
       // ...and the first (older, slower) request resolving afterwards must
       // not overwrite it with stale data.
       firstCompleter.complete(Result.success([_project(1)]));
       await firstRefresh;
-      expect(
-        built.container.read(projectsControllerProvider).value,
-        hasLength(2),
-      );
+      expect(built.container.read(provider).value, hasLength(2));
     },
   );
+
+  test("different user ids never share a cached project list", () async {
+    final built = build();
+    built.repo.fetchResult = Result.success([_project(1, name: 'User A')]);
+    keepAlive(built.container, 7);
+    await built.container.read(projectsControllerProvider(7).future);
+
+    built.repo.fetchResult = Result.success([_project(2, name: 'User B')]);
+    keepAlive(built.container, 8);
+    await built.container.read(projectsControllerProvider(8).future);
+
+    expect(
+      built.container.read(projectsControllerProvider(7)).value?.single.name,
+      'User A',
+    );
+    expect(
+      built.container.read(projectsControllerProvider(8)).value?.single.name,
+      'User B',
+    );
+    expect(built.repo.fetchCalls, 2);
+  });
 }

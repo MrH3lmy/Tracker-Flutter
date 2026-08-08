@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/async_state_view.dart';
+import '../../auth/data/auth_repository.dart';
 import '../data/projects_controller.dart';
 import '../data/selected_project_controller.dart';
 import '../domain/project.dart';
@@ -12,7 +13,20 @@ class ProjectsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final projectsAsync = ref.watch(projectsControllerProvider);
+    final userId = ref.watch(
+      authRepositoryProvider.select((session) => session.userOrNull?.id),
+    );
+
+    // The router normally prevents this screen from existing without an
+    // authenticated user. Keep a defensive loading boundary here too: it
+    // avoids ever binding the UI to an account-less/global project cache
+    // during restoration or a logout transition.
+    if (userId == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final projectsProvider = projectsControllerProvider(userId);
+    final projectsAsync = ref.watch(projectsProvider);
     final selectedId = ref.watch(selectedProjectControllerProvider);
 
     // Once the accessible project list is known, drop a selection that no
@@ -26,7 +40,7 @@ class ProjectsScreen extends ConsumerWidget {
     // listening only to the project list would miss pruning a selection
     // that gets restored *after* the list already loaded.
     void pruneAgainstCurrentList() {
-      final projects = ref.read(projectsControllerProvider).value;
+      final projects = ref.read(projectsProvider).value;
       if (projects == null) return;
       ref
           .read(selectedProjectControllerProvider.notifier)
@@ -34,7 +48,7 @@ class ProjectsScreen extends ConsumerWidget {
     }
 
     ref.listen<AsyncValue<List<Project>>>(
-      projectsControllerProvider,
+      projectsProvider,
       (previous, next) => pruneAgainstCurrentList(),
     );
     ref.listen<int?>(
@@ -44,17 +58,15 @@ class ProjectsScreen extends ConsumerWidget {
 
     return AsyncStateView<List<Project>>(
       value: projectsAsync,
-      onRetry: () => ref.read(projectsControllerProvider.notifier).refresh(),
+      onRetry: () => ref.read(projectsProvider.notifier).refresh(),
       isEmpty: (projects) => projects.isEmpty,
       emptyBuilder: (context) => _RefreshableEmptyState(
-        onRefresh: () =>
-            ref.read(projectsControllerProvider.notifier).refresh(),
+        onRefresh: () => ref.read(projectsProvider.notifier).refresh(),
       ),
       data: (context, projects) => _ProjectList(
         projects: projects,
         selectedId: selectedId,
-        onRefresh: () =>
-            ref.read(projectsControllerProvider.notifier).refresh(),
+        onRefresh: () => ref.read(projectsProvider.notifier).refresh(),
         onSelect: (project) {
           ref
               .read(selectedProjectControllerProvider.notifier)

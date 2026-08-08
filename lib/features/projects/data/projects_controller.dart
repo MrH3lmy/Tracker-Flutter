@@ -3,14 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/project.dart';
 import 'projects_repository.dart';
 
-/// Loads the current user's projects and exposes them as an [AsyncValue],
-/// so `ProjectsScreen` renders loading/data/error through the shared
-/// `AsyncStateView` like every other feature will.
+/// Loads one authenticated user's projects and exposes them as an
+/// [AsyncValue], so `ProjectsScreen` renders loading/data/error through the
+/// shared `AsyncStateView` like every other feature will.
+///
+/// [userId] is intentionally part of the provider identity even though the
+/// backend derives ownership from the bearer token. This prevents one
+/// account's cached project list from ever being reused by another account
+/// after logout/account switch on the same device.
 ///
 /// A failed load surfaces as an [AsyncError] carrying the original
 /// `AppFailure` (thrown, not swallowed) rather than an empty list, so the UI
 /// can distinguish "no projects" from "couldn't load projects".
 class ProjectsController extends AsyncNotifier<List<Project>> {
+  ProjectsController(this.userId);
+
+  final int userId;
   int _requestId = 0;
 
   @override
@@ -51,7 +59,11 @@ class ProjectsController extends AsyncNotifier<List<Project>> {
 }
 
 final projectsControllerProvider =
-    AsyncNotifierProvider<ProjectsController, List<Project>>(
+    AsyncNotifierProvider.family.autoDispose<
+      ProjectsController,
+      List<Project>,
+      int
+    >(
       ProjectsController.new,
       // ProjectsController.build()/refresh() throw AppFailure for
       // ordinary, expected outcomes (offline, 401, 5xx) — not unexpected

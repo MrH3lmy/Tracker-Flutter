@@ -53,15 +53,21 @@ void main() {
       ProviderScope(
         overrides: [
           projectsRepositoryProvider.overrideWithValue(projectsRepo),
-          // SelectedProjectController reads authRepositoryProvider
-          // unconditionally, so its dependencies need overriding even
-          // though these tests don't exercise sign-in themselves.
+          // ProjectsScreen scopes its project provider to the authenticated
+          // user id, so these widget tests restore a real authenticated
+          // session rather than creating an account-less project cache.
           authApiProvider.overrideWithValue(
             FakeAuthApi()
-              ..refreshResult = const Result.failure(UnauthorizedFailure()),
+              ..refreshResult = Result.success(
+                const AuthResult(
+                  accessToken: 'access',
+                  refreshToken: 'refresh',
+                  user: _user,
+                ),
+              ),
           ),
           secureTokenStorageProvider.overrideWithValue(
-            FakeSecureTokenStorage(),
+            FakeSecureTokenStorage(initialToken: 'stored-token'),
           ),
           clientPlatformProvider.overrideWithValue(ClientPlatform.android),
           projectSelectionStoreProvider.overrideWithValue(
@@ -204,7 +210,7 @@ void main() {
             authApiProvider.overrideWithValue(
               FakeAuthApi()
                 ..refreshResult = Result.success(
-                  AuthResult(
+                  const AuthResult(
                     accessToken: 'access',
                     refreshToken: 'refresh',
                     user: _user,
