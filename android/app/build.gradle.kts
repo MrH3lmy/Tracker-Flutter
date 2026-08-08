@@ -6,7 +6,9 @@ plugins {
 
 android {
     namespace = "com.mrh3lmy.tracker.tracker_flutter"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_secure_storage requires compiling against SDK 37; flutter's
+    // own default (flutter.compileSdkVersion) lags behind it.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
