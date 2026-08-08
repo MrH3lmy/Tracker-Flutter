@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../network/api_client.dart';
@@ -22,6 +23,13 @@ final dioProvider = Provider<Dio>((ref) {
       receiveTimeout: const Duration(seconds: 15),
       headers: const {'Accept': 'application/json', _apiVersionHeader: '1'},
       contentType: Headers.jsonContentType,
+      // The browser auth contract (core/network/../features/auth) relies on
+      // an HttpOnly refresh-token cookie; without this, dio_web_adapter's
+      // XHR omits credentials on Flutter Web and the cookie is never sent
+      // or accepted, regardless of same-origin/CORS configuration. Ignored
+      // entirely by the IO adapter on native platforms — this key only
+      // means anything to the web adapter.
+      extra: kIsWeb ? const {'withCredentials': true} : const {},
     ),
   );
 

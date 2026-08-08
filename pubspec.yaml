@@ -23,6 +23,11 @@ dependencies:
   # stack is built out under the networking-layer epic)
   dio: ^5.11.0
 
+  # OS-backed secure storage for native refresh credentials (Keychain /
+  # Keystore / Credential Manager / Secret Service) — never used on Web,
+  # which has no persisted refresh credential to store (see AuthRepository).
+  flutter_secure_storage: ^11.0.0
+
   # Immutable models / API DTOs
   freezed_annotation: ^3.1.0
   json_annotation: ^4.12.0

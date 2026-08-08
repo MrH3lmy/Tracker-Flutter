@@ -1,5 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker_flutter/core/router/app_router.dart';
 import 'package:tracker_flutter/core/router/session_status.dart';
 
@@ -9,7 +9,13 @@ void main() {
   test(
     'router instance stays stable when session state is invalidated',
     () async {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          sessionStatusProvider.overrideWith(
+            (ref) => SessionStatus.authenticated,
+          ),
+        ],
+      );
       addTearDown(container.dispose);
 
       final router = container.read(routerProvider);
