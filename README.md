@@ -13,8 +13,9 @@ This repository currently contains:
 - **Real authentication and secure session storage** ([#3][epic3] — closed): login/registration, an explicit session state machine, OS-backed secure refresh-token storage on native platforms, cookie-based sessions on web, startup session restoration, and logout/logout-all. See [Authentication](#authentication) below.
 - **The first functional release** ([#4][epic4], in progress — shipped as a sequence of vertical slices, not one PR):
   - Slice 1: the authenticated shell and a Projects list (load, select, refresh, safe selection state). See [Projects](#projects) below.
+  - Slice 2: the user's global board-column layout (load, refresh). See [Board columns](#board-columns) below — note this is **not** project-scoped; see that section for why.
 
-It intentionally does not yet include boards/columns, tasks, notes, attachments, or settings — those are later slices of the same epic.
+It intentionally does not yet include tasks, notes, attachments, or settings — those are later slices of the same epic.
 
 [epic1]: https://github.com/MrH3lmy/Tracker-Flutter/issues/1
 [epic2]: https://github.com/MrH3lmy/Tracker-Flutter/issues/2
@@ -74,6 +75,7 @@ lib/
     auth/          # login/register/session — see Authentication below
     shell/         # authenticated app shell (adaptive navigation chrome)
     projects/      # project list + selection — see Projects below
+    board_columns/ # the user's global Kanban layout — see Board columns below
     not_found/     # unknown-route screen
   src/app.dart     # MaterialApp.router wiring theme + router together
   bootstrap.dart   # shared startup: error handling, logging init, ProviderScope
@@ -127,13 +129,28 @@ Session restoration runs once at startup (`AuthRepository.build()`); routes are 
 
 `features/shell/presentation/app_shell.dart` hosts the account menu (sign out / sign out everywhere) so it stays available regardless of which destination is active, rather than living on an individual screen.
 
+## Board columns
+
+`features/board_columns/` is epic #4's second vertical slice: the authenticated user's Kanban column layout, against Tracker-BE's `GET /api/v1/board-columns` (`BoardController`).
+
+**This is deliberately not project-scoped**, even though the epic roadmap's original wording talked about "boards for the selected project." Tracker-BE's actual model, verified directly against its source rather than assumed: it provisions exactly **one** board per user at registration (`BoardProvisioningService`), with **no REST resource for the board itself** — no list/get/select-board endpoint exists anywhere. The `Board` entity has no `projectId`; `BoardColumn` rows belong to that single per-user board, also with no project linkage. Tasks (`Task.projectId` and `Task.boardColumnId`) are the only place a project and a column ever meet, and those are two independent foreign keys on the same row — a task can sit in a project *and* in a column, but the column/board itself isn't scoped to any project. It's one flat, cross-project Kanban layout per user. This slice does not invent project-scoped boards, board selection, or a `selectedBoardProvider` to paper over that — see the PR that introduced this section for the full investigation.
+
+The endpoint is not paginated and Tracker-BE already orders the response by `position` ascending (`findAllByUserIdOrderByPositionAsc`).
+
+- `domain/board_column.dart` — `BoardColumn` mirrors `BoardColumnResponse` field-for-field (`id`, `name`, `status`, `position`) — no `boardId`, on purpose. `ColumnStatus` parsing degrades to `ColumnStatus.unknown` for a status value this build doesn't recognize yet, same forward-compatibility approach as `ProjectStatus`.
+- `data/board_columns_repository.dart` — `BoardColumnsRepository` wraps `ApiClient`; re-asserts the backend's `position` ordering defensively rather than trusting wire order to survive unchanged, but invents no ordering of its own.
+- `data/board_columns_controller.dart` — `BoardColumnsController` (`AsyncNotifier<List<BoardColumn>>.family.autoDispose`, keyed by user id) mirrors `ProjectsController`'s pattern exactly: retry disabled for the same reason, `refresh()` keeps the previous list visible while re-fetching, and guards against an older in-flight `refresh()` clobbering a newer one. `.autoDispose` plus the user-id key means one account's cached column list can never leak to another after logout/account switch — a new user id is a different provider instance, and the old one is disposed once nothing references it.
+- `presentation/board_screen.dart` — a horizontally-scrolling Kanban layout (one card per column) inside a pull-to-refresh `RefreshIndicator`, with loading/empty/offline/unauthorized/error/retry via the shared `AsyncStateView`. Task cards are not implemented yet — each column shows an explicit placeholder; wiring the selected project's tasks into these same global columns (grouped by `boardColumnId`, filtered by `projectId`) is the next slice.
+
+Selecting a different project elsewhere in the app has **no effect** on this screen — `BoardScreen` never reads `selectedProjectControllerProvider` — which is asserted directly in both `board_screen_test.dart` and `test/integration/app_flow_test.dart`.
+
 ## Testing
 
 - `test/core/**` — unit tests for `Result`, `AppConfig`, `AppLogger` redaction, breakpoints, and the full networking layer (mapper, pagination parsing, request policy, connectivity classification, and each interceptor's behavior against a fake `HttpClientAdapter` — including concurrent-401 single-flight refresh and non-idempotent no-auto-retry).
-- `test/features/**` — per-feature unit/widget tests following the `data`/`domain`/`presentation` split (auth and projects).
+- `test/features/**` — per-feature unit/widget tests following the `data`/`domain`/`presentation` split (auth, projects, board_columns).
 - `test/widget/**` — widget tests for `AdaptiveScaffold` and an app-level smoke test (launch → authenticated shell; unknown route → not-found screen).
-- `test/integration/app_flow_test.dart` — a widget-test-level run of the full launch → sign in → authenticated shell → load projects → select project flow, with every provider and screen real except the network boundary (`AuthApi`/`ProjectsRepository`), which is faked since no live Tracker-BE is reachable from a widget test.
-- `integration_test/app_test.dart` — true device/backend end-to-end launch smoke test; feature epics extend `test/integration/app_flow_test.dart` with their own flows (e.g. select project → browse boards) rather than replacing it.
+- `test/integration/app_flow_test.dart` — a widget-test-level run of the full launch → sign in → authenticated shell → load projects → select project → open Board → load board columns flow (plus an explicit assertion that changing the selected project doesn't reload or change the columns), with every provider and screen real except the network boundary (`AuthApi`/`ProjectsRepository`/`BoardColumnsRepository`), which is faked since no live Tracker-BE is reachable from a widget test.
+- `integration_test/app_test.dart` — true device/backend end-to-end launch smoke test; feature epics extend `test/integration/app_flow_test.dart` with their own flows (e.g. task list → task details) rather than replacing it.
 
 ## Contributing
 

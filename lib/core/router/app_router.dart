@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/register_screen.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
+import '../../features/board_columns/presentation/board_screen.dart';
 import '../../features/not_found/presentation/not_found_screen.dart';
 import '../../features/projects/presentation/projects_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
@@ -17,6 +18,7 @@ class AppRoutes {
   static const signIn = '/sign-in';
   static const register = '/register';
   static const home = '/';
+  static const board = '/board';
 }
 
 /// A stable router instance whose redirect logic is refreshed when session
@@ -60,11 +62,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RegisterScreen(),
       ),
       ShellRoute(
-        builder: (context, state, child) => AppShell(child: child),
+        builder: (context, state, child) =>
+            AppShell(routerState: state, child: child),
         routes: [
           GoRoute(
             path: AppRoutes.home,
             builder: (context, state) => const ProjectsScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.board,
+            builder: (context, state) => const BoardScreen(),
           ),
         ],
       ),
