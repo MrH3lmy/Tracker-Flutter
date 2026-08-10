@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker_flutter/core/error/app_failure.dart';
 import 'package:tracker_flutter/core/network/api_client.dart';
 import 'package:tracker_flutter/features/tasks/data/tasks_repository.dart';
-import 'package:tracker_flutter/features/tasks/domain/task.dart';
 
 import '../../../helpers/fake_connectivity_service.dart';
 import '../../../helpers/fake_http_client_adapter.dart';
