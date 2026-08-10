@@ -59,9 +59,15 @@ class TaskWriteController extends Notifier<TaskWriteState> {
     if (state.isSubmitting) return null;
     state = const TaskWriteState(isSubmitting: true);
 
+    final detailKey = (userId: userId, taskId: taskId);
+    final existing = ref.read(taskDetailControllerProvider(detailKey)).value;
+    final safeInput = input.boardColumnId == null
+        ? input.withBoardColumnId(existing?.boardColumnId)
+        : input;
+
     final result = await ref
         .read(tasksRepositoryProvider)
-        .updateTask(taskId, input);
+        .updateTask(taskId, safeInput);
     final task = result.valueOrNull;
     if (task == null) {
       state = TaskWriteState(failure: result.failureOrNull);
@@ -69,14 +75,7 @@ class TaskWriteController extends Notifier<TaskWriteState> {
     }
 
     _invalidateTaskLists(userId: userId, projectId: projectId);
-    ref
-        .read(
-          taskDetailControllerProvider((
-            userId: userId,
-            taskId: taskId,
-          )).notifier,
-        )
-        .replace(task);
+    ref.read(taskDetailControllerProvider(detailKey).notifier).replace(task);
     state = TaskWriteState(task: task);
     return task;
   }
