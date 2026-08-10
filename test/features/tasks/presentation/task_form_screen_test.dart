@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tracker_flutter/core/result/result.dart';
 import 'package:tracker_flutter/features/auth/data/auth_api.dart';
+import 'package:tracker_flutter/features/auth/data/auth_repository.dart';
 import 'package:tracker_flutter/features/auth/data/auth_result.dart';
 import 'package:tracker_flutter/features/auth/data/client_platform.dart';
 import 'package:tracker_flutter/features/auth/data/secure_token_storage.dart';
@@ -87,12 +88,16 @@ void main() {
         child: MaterialApp.router(routerConfig: router),
       ),
     );
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TaskCreateScreen)),
+    );
+    await container.read(authRepositoryProvider.notifier).startupRestoration;
     await tester.pumpAndSettle();
   }
 
   Future<void> scrollToSubmit(WidgetTester tester) => tester.dragUntilVisible(
     find.widgetWithText(FilledButton, 'Create task'),
-    find.byType(ListView),
+    find.byType(SingleChildScrollView),
     const Offset(0, -400),
   );
 

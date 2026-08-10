@@ -250,245 +250,247 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
 
     return Form(
       key: _formKey,
-      child: ListView(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.md),
-        children: [
-          Row(
-            children: [
-              IconButton(
-                tooltip: 'Back',
-                onPressed: writeState.isSubmitting
-                    ? null
-                    : () => widget.task == null
-                          ? context.go('/tasks')
-                          : context.go('/tasks/${widget.task!.id}'),
-                icon: const Icon(Icons.arrow_back),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                IconButton(
+                  tooltip: 'Back',
+                  onPressed: writeState.isSubmitting
+                      ? null
+                      : () => widget.task == null
+                            ? context.go('/tasks')
+                            : context.go('/tasks/${widget.task!.id}'),
+                  icon: const Icon(Icons.arrow_back),
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    widget.isEditing ? 'Edit task' : 'New task',
+                    style: theme.textTheme.headlineSmall,
+                  ),
+                ),
+              ],
+            ),
+            if (widget.projectId != null && !widget.isEditing) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'This task will be added to the selected project.',
+                style: theme.textTheme.bodySmall,
               ),
-              const SizedBox(width: AppSpacing.xs),
-              Expanded(
-                child: Text(
-                  widget.isEditing ? 'Edit task' : 'New task',
-                  style: theme.textTheme.headlineSmall,
-                ),
-              ),
             ],
-          ),
-          if (widget.projectId != null && !widget.isEditing) ...[
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              'This task will be added to the selected project.',
-              style: theme.textTheme.bodySmall,
-            ),
-          ],
-          const SizedBox(height: AppSpacing.md),
-          TextFormField(
-            controller: _titleController,
-            autofocus: !widget.isEditing,
-            maxLength: 255,
-            decoration: InputDecoration(
-              labelText: 'Title',
-              errorText: validation?.fieldErrors['title'],
-            ),
-            validator: (value) {
-              final trimmed = value?.trim() ?? '';
-              if (trimmed.isEmpty) return 'Title is required';
-              if (trimmed.length > 255) {
-                return 'Title must be at most 255 characters';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextFormField(
-            controller: _descriptionController,
-            minLines: 3,
-            maxLines: 6,
-            decoration: const InputDecoration(labelText: 'Description'),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _DateRow(
-            label: 'Start date',
-            value: _startDate,
-            onPick: () => _pickDate(_DateField.start),
-            onClear: () => setState(() => _startDate = null),
-          ),
-          _DateRow(
-            label: 'Due date',
-            value: _dueDate,
-            onPick: () => _pickDate(_DateField.due),
-            onClear: () => setState(() => _dueDate = null),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextFormField(
-            controller: _estimateController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              labelText: 'Estimate (minutes)',
-              errorText: validation?.fieldErrors['estimatedMinutes'],
-            ),
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) return null;
-              final parsed = int.tryParse(value.trim());
-              if (parsed == null || parsed < 0) {
-                return 'Estimate must be 0 or more';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: AppSpacing.md),
-          DropdownButtonFormField<TaskStatus>(
-            initialValue: _status,
-            decoration: const InputDecoration(labelText: 'Status'),
-            items: [
-              for (final status in activeTaskStatuses)
-                DropdownMenuItem(
-                  value: status,
-                  child: Text(taskStatusLabel(status)),
-                ),
-            ],
-            onChanged: writeState.isSubmitting
-                ? null
-                : (value) => setState(() => _status = value ?? _status),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          DropdownButtonFormField<TaskArea>(
-            initialValue: _area,
-            decoration: const InputDecoration(labelText: 'Area'),
-            items: [
-              for (final area in TaskArea.values)
-                DropdownMenuItem(value: area, child: Text(_areaLabel(area))),
-            ],
-            onChanged: writeState.isSubmitting
-                ? null
-                : (value) => setState(() => _area = value ?? _area),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          DropdownButtonFormField<TaskEffort>(
-            initialValue: _effort,
-            decoration: const InputDecoration(labelText: 'Effort'),
-            items: [
-              for (final effort in TaskEffort.values.where(
-                (value) => value != TaskEffort.unknown,
-              ))
-                DropdownMenuItem(
-                  value: effort,
-                  child: Text(_effortLabel(effort)),
-                ),
-            ],
-            onChanged: writeState.isSubmitting
-                ? null
-                : (value) => setState(() => _effort = value ?? _effort),
-          ),
-          const SizedBox(height: AppSpacing.md),
-          DropdownButtonFormField<TaskRiskLevel>(
-            initialValue: _riskLevel,
-            decoration: const InputDecoration(labelText: 'Risk'),
-            items: [
-              for (final risk in TaskRiskLevel.values.where(
-                (value) => value != TaskRiskLevel.unknown,
-              ))
-                DropdownMenuItem(value: risk, child: Text(_riskLabel(risk))),
-            ],
-            onChanged: writeState.isSubmitting
-                ? null
-                : (value) => setState(() => _riskLevel = value ?? _riskLevel),
-          ),
-          if (_riskLevel == TaskRiskLevel.high ||
-              _riskLevel == TaskRiskLevel.critical) ...[
-            const SizedBox(height: AppSpacing.sm),
+            const SizedBox(height: AppSpacing.md),
             TextFormField(
-              controller: _riskReasonController,
-              maxLength: 500,
+              controller: _titleController,
+              autofocus: !widget.isEditing,
+              maxLength: 255,
               decoration: InputDecoration(
-                labelText: 'Risk reason',
-                errorText: validation?.fieldErrors['riskReason'],
+                labelText: 'Title',
+                errorText: validation?.fieldErrors['title'],
               ),
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'Risk reason is required for high or critical risk'
-                  : null,
+              validator: (value) {
+                final trimmed = value?.trim() ?? '';
+                if (trimmed.isEmpty) return 'Title is required';
+                if (trimmed.length > 255) {
+                  return 'Title must be at most 255 characters';
+                }
+                return null;
+              },
             ),
-          ],
-          if (_status == TaskStatus.blocked) ...[
             const SizedBox(height: AppSpacing.sm),
             TextFormField(
-              controller: _blockedReasonController,
-              decoration: const InputDecoration(labelText: 'Blocked reason'),
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'Blocked reason is required when blocked'
-                  : null,
+              controller: _descriptionController,
+              minLines: 3,
+              maxLines: 6,
+              decoration: const InputDecoration(labelText: 'Description'),
             ),
-          ],
-          if (_status == TaskStatus.waiting) ...[
-            const SizedBox(height: AppSpacing.sm),
-            TextFormField(
-              controller: _waitingOnController,
-              decoration: const InputDecoration(labelText: 'Waiting on'),
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'Waiting on is required when waiting'
-                  : null,
+            const SizedBox(height: AppSpacing.md),
+            _DateRow(
+              label: 'Start date',
+              value: _startDate,
+              onPick: () => _pickDate(_DateField.start),
+              onClear: () => setState(() => _startDate = null),
             ),
             _DateRow(
-              label: 'Follow-up date',
-              value: _followUpDate,
-              onPick: () => _pickDate(_DateField.followUp),
-              onClear: () => setState(() => _followUpDate = null),
-              required: true,
+              label: 'Due date',
+              value: _dueDate,
+              onPick: () => _pickDate(_DateField.due),
+              onClear: () => setState(() => _dueDate = null),
             ),
-          ],
-          const SizedBox(height: AppSpacing.sm),
-          TextFormField(
-            controller: _trackController,
-            maxLength: 120,
-            decoration: const InputDecoration(labelText: 'Track'),
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          TextFormField(
-            controller: _phaseController,
-            maxLength: 120,
-            decoration: const InputDecoration(labelText: 'Phase'),
-          ),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Important'),
-            value: _important,
-            onChanged: writeState.isSubmitting
-                ? null
-                : (value) => setState(() => _important = value),
-          ),
-          if (_preserved.recurrence != null && widget.isEditing) ...[
             const SizedBox(height: AppSpacing.sm),
-            Text(
-              'Recurrence is preserved by this edit. Recurrence editing will be added in a later slice.',
-              style: theme.textTheme.bodySmall,
+            TextFormField(
+              controller: _estimateController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: 'Estimate (minutes)',
+                errorText: validation?.fieldErrors['estimatedMinutes'],
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) return null;
+                final parsed = int.tryParse(value.trim());
+                if (parsed == null || parsed < 0) {
+                  return 'Estimate must be 0 or more';
+                }
+                return null;
+              },
             ),
-          ],
-          if (_crossFieldError != null) ...[
             const SizedBox(height: AppSpacing.md),
-            Text(
-              _crossFieldError!,
-              style: TextStyle(color: theme.colorScheme.error),
+            DropdownButtonFormField<TaskStatus>(
+              initialValue: _status,
+              decoration: const InputDecoration(labelText: 'Status'),
+              items: [
+                for (final status in activeTaskStatuses)
+                  DropdownMenuItem(
+                    value: status,
+                    child: Text(taskStatusLabel(status)),
+                  ),
+              ],
+              onChanged: writeState.isSubmitting
+                  ? null
+                  : (value) => setState(() => _status = value ?? _status),
             ),
-          ],
-          if (writeState.failure != null) ...[
             const SizedBox(height: AppSpacing.md),
-            Text(
-              _failureMessage(writeState.failure!),
-              style: TextStyle(color: theme.colorScheme.error),
+            DropdownButtonFormField<TaskArea>(
+              initialValue: _area,
+              decoration: const InputDecoration(labelText: 'Area'),
+              items: [
+                for (final area in TaskArea.values)
+                  DropdownMenuItem(value: area, child: Text(_areaLabel(area))),
+              ],
+              onChanged: writeState.isSubmitting
+                  ? null
+                  : (value) => setState(() => _area = value ?? _area),
             ),
+            const SizedBox(height: AppSpacing.md),
+            DropdownButtonFormField<TaskEffort>(
+              initialValue: _effort,
+              decoration: const InputDecoration(labelText: 'Effort'),
+              items: [
+                for (final effort in TaskEffort.values.where(
+                  (value) => value != TaskEffort.unknown,
+                ))
+                  DropdownMenuItem(
+                    value: effort,
+                    child: Text(_effortLabel(effort)),
+                  ),
+              ],
+              onChanged: writeState.isSubmitting
+                  ? null
+                  : (value) => setState(() => _effort = value ?? _effort),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            DropdownButtonFormField<TaskRiskLevel>(
+              initialValue: _riskLevel,
+              decoration: const InputDecoration(labelText: 'Risk'),
+              items: [
+                for (final risk in TaskRiskLevel.values.where(
+                  (value) => value != TaskRiskLevel.unknown,
+                ))
+                  DropdownMenuItem(value: risk, child: Text(_riskLabel(risk))),
+              ],
+              onChanged: writeState.isSubmitting
+                  ? null
+                  : (value) => setState(() => _riskLevel = value ?? _riskLevel),
+            ),
+            if (_riskLevel == TaskRiskLevel.high ||
+                _riskLevel == TaskRiskLevel.critical) ...[
+              const SizedBox(height: AppSpacing.sm),
+              TextFormField(
+                controller: _riskReasonController,
+                maxLength: 500,
+                decoration: InputDecoration(
+                  labelText: 'Risk reason',
+                  errorText: validation?.fieldErrors['riskReason'],
+                ),
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Risk reason is required for high or critical risk'
+                    : null,
+              ),
+            ],
+            if (_status == TaskStatus.blocked) ...[
+              const SizedBox(height: AppSpacing.sm),
+              TextFormField(
+                controller: _blockedReasonController,
+                decoration: const InputDecoration(labelText: 'Blocked reason'),
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Blocked reason is required when blocked'
+                    : null,
+              ),
+            ],
+            if (_status == TaskStatus.waiting) ...[
+              const SizedBox(height: AppSpacing.sm),
+              TextFormField(
+                controller: _waitingOnController,
+                decoration: const InputDecoration(labelText: 'Waiting on'),
+                validator: (value) => value == null || value.trim().isEmpty
+                    ? 'Waiting on is required when waiting'
+                    : null,
+              ),
+              _DateRow(
+                label: 'Follow-up date',
+                value: _followUpDate,
+                onPick: () => _pickDate(_DateField.followUp),
+                onClear: () => setState(() => _followUpDate = null),
+                required: true,
+              ),
+            ],
+            const SizedBox(height: AppSpacing.sm),
+            TextFormField(
+              controller: _trackController,
+              maxLength: 120,
+              decoration: const InputDecoration(labelText: 'Track'),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            TextFormField(
+              controller: _phaseController,
+              maxLength: 120,
+              decoration: const InputDecoration(labelText: 'Phase'),
+            ),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text('Important'),
+              value: _important,
+              onChanged: writeState.isSubmitting
+                  ? null
+                  : (value) => setState(() => _important = value),
+            ),
+            if (_preserved.recurrence != null && widget.isEditing) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Recurrence is preserved by this edit. Recurrence editing will be added in a later slice.',
+                style: theme.textTheme.bodySmall,
+              ),
+            ],
+            if (_crossFieldError != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                _crossFieldError!,
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
+            ],
+            if (writeState.failure != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                _failureMessage(writeState.failure!),
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+            FilledButton(
+              onPressed: writeState.isSubmitting ? null : _submit,
+              child: writeState.isSubmitting
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : Text(widget.isEditing ? 'Save changes' : 'Create task'),
+            ),
+            const SizedBox(height: AppSpacing.xl),
           ],
-          const SizedBox(height: AppSpacing.lg),
-          FilledButton(
-            onPressed: writeState.isSubmitting ? null : _submit,
-            child: writeState.isSubmitting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text(widget.isEditing ? 'Save changes' : 'Create task'),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-        ],
+        ),
       ),
     );
   }
