@@ -71,9 +71,14 @@ class TaskWriteController extends Notifier<TaskWriteState> {
     }
 
     _invalidateTaskLists(userId: userId, projectId: projectId);
-    ref.invalidate(
-      taskDetailControllerProvider((userId: userId, taskId: taskId)),
-    );
+    ref
+        .read(
+          taskDetailControllerProvider((
+            userId: userId,
+            taskId: taskId,
+          )).notifier,
+        )
+        .replace(task);
     state = TaskWriteState(task: task);
     return task;
   }
