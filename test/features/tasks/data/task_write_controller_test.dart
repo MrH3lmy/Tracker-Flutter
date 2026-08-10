@@ -11,7 +11,11 @@ import 'package:tracker_flutter/features/tasks/domain/task_write_input.dart';
 
 import '../../../helpers/fake_tasks_repository.dart';
 
-Task _task(int id, {int? boardColumnId}) => Task.fromJson({
+Task _task(
+  int id, {
+  int? boardColumnId,
+  String status = 'BACKLOG',
+}) => Task.fromJson({
   'id': id,
   'title': 'Created task',
   'description': null,
@@ -19,7 +23,7 @@ Task _task(int id, {int? boardColumnId}) => Task.fromJson({
   'createdDate': '2026-08-11T01:00:00',
   'updatedDate': '2026-08-11T01:00:00',
   'important': false,
-  'status': 'BACKLOG',
+  'status': status,
   'area': 'PERSONAL',
   'effort': 'MEDIUM',
   'overdue': false,
@@ -73,7 +77,7 @@ void main() {
   );
 
   test(
-    'update carries cached board column into a form payload that omits it',
+    'update carries cached board column when status is unchanged',
     () async {
       final repository = FakeTasksRepository();
       repository.fetchTaskHandler = (id) async =>
@@ -112,6 +116,49 @@ void main() {
 
       expect(updated!.boardColumnId, 4);
       expect(repository.lastWriteInput!.boardColumnId, 4);
+    },
+  );
+
+  test(
+    'status change leaves board column null so backend can realign it',
+    () async {
+      final repository = FakeTasksRepository();
+      repository.fetchTaskHandler = (id) async => Result.success(
+        _task(id, boardColumnId: 4, status: 'IN_PROGRESS'),
+      );
+      repository.updateTaskHandler = (int id, TaskWriteInput input) async =>
+          Result.success(_task(id, boardColumnId: input.boardColumnId));
+
+      final container = ProviderContainer(
+        overrides: [tasksRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+
+      const detailKey = (userId: 1, taskId: 10);
+      final detailProvider = taskDetailControllerProvider(detailKey);
+      final detailSubscription = container.listen(
+        detailProvider,
+        (previous, next) {},
+      );
+      addTearDown(detailSubscription.close);
+      await container.read(detailProvider.future);
+
+      final writeSubscription = container.listen(
+        taskWriteControllerProvider,
+        (previous, next) {},
+      );
+      addTearDown(writeSubscription.close);
+
+      await container
+          .read(taskWriteControllerProvider.notifier)
+          .update(
+            userId: 1,
+            taskId: 10,
+            projectId: null,
+            input: TaskWriteInput.defaults(),
+          );
+
+      expect(repository.lastWriteInput!.boardColumnId, isNull);
     },
   );
 }
