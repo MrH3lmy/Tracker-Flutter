@@ -72,44 +72,45 @@ void main() {
     },
   );
 
-  test('update carries cached board column into a form payload that omits it', () async {
-    final repository = FakeTasksRepository()
-      ..fetchTaskHandler = (id) async => Result.success(
-        _task(id, boardColumnId: 4),
-      )
-      ..updateTaskHandler = (id, input) async => Result.success(
-        _task(id, boardColumnId: input.boardColumnId),
+  test(
+    'update carries cached board column into a form payload that omits it',
+    () async {
+      final repository = FakeTasksRepository()
+        ..fetchTaskHandler = (id) async =>
+            Result.success(_task(id, boardColumnId: 4))
+              ..updateTaskHandler = (id, input) async =>
+                  Result.success(_task(id, boardColumnId: input.boardColumnId));
+      final container = ProviderContainer(
+        overrides: [tasksRepositoryProvider.overrideWithValue(repository)],
       );
-    final container = ProviderContainer(
-      overrides: [tasksRepositoryProvider.overrideWithValue(repository)],
-    );
-    addTearDown(container.dispose);
+      addTearDown(container.dispose);
 
-    const detailKey = (userId: 1, taskId: 10);
-    final detailProvider = taskDetailControllerProvider(detailKey);
-    final detailSubscription = container.listen(
-      detailProvider,
-      (previous, next) {},
-    );
-    addTearDown(detailSubscription.close);
-    await container.read(detailProvider.future);
+      const detailKey = (userId: 1, taskId: 10);
+      final detailProvider = taskDetailControllerProvider(detailKey);
+      final detailSubscription = container.listen(
+        detailProvider,
+        (previous, next) {},
+      );
+      addTearDown(detailSubscription.close);
+      await container.read(detailProvider.future);
 
-    final writeSubscription = container.listen(
-      taskWriteControllerProvider,
-      (previous, next) {},
-    );
-    addTearDown(writeSubscription.close);
+      final writeSubscription = container.listen(
+        taskWriteControllerProvider,
+        (previous, next) {},
+      );
+      addTearDown(writeSubscription.close);
 
-    final updated = await container
-        .read(taskWriteControllerProvider.notifier)
-        .update(
-          userId: 1,
-          taskId: 10,
-          projectId: null,
-          input: TaskWriteInput.defaults(),
-        );
+      final updated = await container
+          .read(taskWriteControllerProvider.notifier)
+          .update(
+            userId: 1,
+            taskId: 10,
+            projectId: null,
+            input: TaskWriteInput.defaults(),
+          );
 
-    expect(updated!.boardColumnId, 4);
-    expect(repository.lastWriteInput!.boardColumnId, 4);
-  });
+      expect(updated!.boardColumnId, 4);
+      expect(repository.lastWriteInput!.boardColumnId, 4);
+    },
+  );
 }
