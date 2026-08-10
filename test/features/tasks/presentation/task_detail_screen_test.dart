@@ -106,6 +106,9 @@ void main() {
     expect(find.text('Priority 90'), findsOneWidget);
     expect(find.text('Schedule'), findsOneWidget);
     expect(find.text('Work'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -500));
+    await tester.pumpAndSettle();
     expect(find.text('Structure'), findsOneWidget);
     expect(repo.fetchTaskCalls, 1);
   });
