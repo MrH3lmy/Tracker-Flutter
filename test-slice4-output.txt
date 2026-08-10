@@ -1,0 +1,680 @@
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 96.0.0 (105.0.0 available)
+  analyzer 10.2.0 (14.1.0 available)
+  build 4.0.7 (4.0.10 available)
+  build_daemon 4.1.4 (4.1.5 available)
+  build_runner 2.15.1 (2.16.0 available)
+  dart_style 3.1.7 (3.1.12 available)
+  hooks 2.0.2 (2.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  meta 1.18.0 (1.19.0 available)
+  package_config 2.2.0 (3.0.0 available)
+  record_use 0.6.0 (1.0.0 available)
+  test 1.31.0 (1.31.2 available)
+  test_api 0.7.11 (0.7.13 available)
+  test_core 0.6.17 (0.6.19 available)
+  vector_math 2.2.0 (2.4.2 available)
+  xml 6.6.1 (7.0.1 available)
+Got dependencies!
+16 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/widget/adaptive_scaffold_test.dart: uses a bottom NavigationBar at compact widths
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/widget/adaptive_scaffold_test.dart: uses a NavigationRail at expanded widths
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/integration/app_flow_test.dart: launch -> sign in -> select project -> board -> paginated tasks -> detail
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/widget/app_smoke_test.dart: launches to the projects screen inside the app shell
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/router/app_router_test.dart: router instance stays stable when session state is invalidated
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/widget/app_smoke_test.dart: unknown routes render the not-found screen
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/router/session_status_test.dart: unknown maps to unknown
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/router/session_status_test.dart: authenticated maps to authenticated
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/router/session_status_test.dart: refreshing maps to authenticated so a background refresh does not bounce navigation
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/router/session_status_test.dart: unauthenticated maps to unauthenticated
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/router/session_status_test.dart: unrecoverable maps to unauthenticated
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/router/app_router_redirect_test.dart: unknown holds the app on the splash screen
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/router/app_router_redirect_test.dart: unauthenticated redirects to the sign-in screen
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/router/app_router_redirect_test.dart: authenticated users are bounced away from the sign-in route back to home
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/router/app_router_redirect_test.dart: unauthenticated users cannot navigate straight to home
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/utils/breakpoints_test.dart: classifies phone widths as compact
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/utils/breakpoints_test.dart: classifies tablet widths as medium
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/utils/breakpoints_test.dart: classifies desktop widths as expanded
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/connectivity/connectivity_service_test.dart: hasNetworkPresenceFrom is false when every result is none
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/connectivity/connectivity_service_test.dart: hasNetworkPresenceFrom is true when any interface is up
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/connectivity/connectivity_service_test.dart: hasNetworkPresenceFrom is false for an empty result list
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/pagination/page_meta_test.dart: PageMeta.fromHeaders parses all pagination headers
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/pagination/page_meta_test.dart: PageMeta.fromHeaders derives totalPages and hasNext when the backend omits them
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/pagination/page_meta_test.dart: PageMeta.fromHeaders falls back to zeroed metadata when headers are entirely missing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/pagination/page_meta_test.dart: PageMeta.fromHeaders is resilient to non-numeric header values
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/pagination/page_meta_test.dart: PageMeta.fromHeaders derives hasNext when its header is malformed
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/pagination/paginated_result_test.dart: isEmpty reflects an empty items list
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/pagination/paginated_result_test.dart: isEmpty is false when items are present
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/auth/auth_session_test.dart: NullAuthSession has no access token
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/auth/auth_session_test.dart: NullAuthSession refresh never recovers a session
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/auth/auth_session_test.dart: NullAuthSession forceSignOut completes without throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/request_policy_test.dart: RequestPolicy defaults GET is idempotent (safe to retry) with no policy set
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/request_policy_test.dart: RequestPolicy defaults POST is not safe to retry with no policy set
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/request_policy_test.dart: RequestPolicy defaults an explicit retryable policy makes a POST safe to retry
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/request_policy_test.dart: RequestPolicy defaults skipAuth defaults to false
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/request_policy_test.dart: RequestPolicy defaults an explicit skipAuth policy round-trips through toOptions
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/retry_interceptor_test.dart: retries an idempotent GET once on a transient 503
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/retry_interceptor_test.dart: does not retry a non-idempotent POST on a 503
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/retry_interceptor_test.dart: retries an explicitly approved non-idempotent request
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/retry_interceptor_test.dart: does not retry one-shot FormData bodies
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/retry_interceptor_test.dart: respects Retry-After on a 429
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/retry_interceptor_test.dart: gives up after maxAttempts transient failures
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/retry_interceptor_test.dart: does not retry a non-retryable client error like 404
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/redacting_log_interceptor_test.dart: never logs an Authorization header value
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/redacting_log_interceptor_test.dart: redacts a password field in a logged request body
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/redacting_log_interceptor_test.dart: never logs file content for multipart attachment uploads
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/redacting_log_interceptor_test.dart: does not log request bodies when logBodies is false
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/redacting_log_interceptor_test.dart: logs the final outcome of a failed request without leaking data
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/refresh_interceptor_test.dart: retries once after a successful refresh
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/refresh_interceptor_test.dart: coalesces concurrent 401s into a single refresh call
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/refresh_interceptor_test.dart: forces sign-out when refresh cannot recover the session
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/refresh_interceptor_test.dart: does not intercept public request 401 responses
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/refresh_interceptor_test.dart: refreshes but does not replay an unsafe write
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/refresh_interceptor_test.dart: signs out when the retried request is still unauthorized
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/auth_header_interceptor_test.dart: injects the bearer token from AuthSession
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/auth_header_interceptor_test.dart: omits the header when there is no token
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/interceptors/auth_header_interceptor_test.dart: omits the header when skipAuth is set, even with a token present
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/errors/dio_failure_mapper_test.dart: mapDioExceptionToFailure maps timeouts to TimeoutFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/errors/dio_failure_mapper_test.dart: mapDioExceptionToFailure maps connectionError to NetworkFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/errors/dio_failure_mapper_test.dart: mapDioExceptionToFailure maps cancel to CancelledFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/errors/dio_failure_mapper_test.dart: mapDioExceptionToFailure maps 401 to UnauthorizedFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/errors/dio_failure_mapper_test.dart: mapDioExceptionToFailure maps 409 to ConflictFailure with a message
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/errors/dio_failure_mapper_test.dart: mapDioExceptionToFailure maps 422 to ValidationFailure with field errors
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/errors/dio_failure_mapper_test.dart: mapDioExceptionToFailure maps 429 to RateLimitedFailure with retryAfter
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/errors/dio_failure_mapper_test.dart: mapDioExceptionToFailure maps 5xx to ServerFailure with the status code
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/errors/dio_failure_mapper_test.dart: mapDioExceptionToFailure maps an unmapped status to UnknownFailure without throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/errors/dio_failure_mapper_test.dart: mapDioExceptionToFailure degrades gracefully when the error body has an unexpected shape
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/api_client_test.dart: a successful GET decodes the response body
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/api_client_test.dart: a validation error maps to a ValidationFailure result
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/api_client_test.dart: getPaginated parses items and page headers together
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/api_client_test.dart: getPaginated rejects a non-array response body
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/api_client_test.dart: getBytes returns an immutable binary payload
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/api_client_test.dart: a connection error with no network reports OfflineFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/api_client_test.dart: a connection error with network present reports NetworkFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/api_client_test.dart: connectivity lookup failures preserve the Result contract
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/api_client_test.dart: a cancelled request reports CancelledFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/api_client_test.dart: an unmapped exception becomes UnknownFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/network/network_providers_test.dart: the redacting logger is the final Dio interceptor
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/result/result_test.dart: Result success exposes the value and not a failure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/result/result_test.dart: Result failure exposes the failure and not a value
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/result/result_test.dart: Result when dispatches to the matching branch
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/result/result_test.dart: Result map transforms only the success value
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/result/result_test.dart: Result equality is value-based
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/config/app_config_test.dart: AppConfig.fromEnvironment falls back to localhost only for the local environment
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/config/app_config_test.dart: AppConfig.fromEnvironment requires an explicit base URL outside the local environment
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/config/app_config_test.dart: AppConfig.fromEnvironment rejects an insecure production base URL
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/config/app_config_test.dart: AppConfig.fromEnvironment rejects malformed and unsupported base URLs
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/config/app_config_test.dart: AppConfig.fromEnvironment accepts a secure production base URL
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/config/app_config_test.dart: AppConfig.fromEnvironment enables verbose logging only for local and development
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/config/app_config_test.dart: AppConfig.fromEnvironment isProduction is true only for the production environment
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/config/app_config_test.dart: AppEnvironment.fromName parses known names
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/config/app_config_test.dart: AppEnvironment.fromName defaults unknown names to local
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/logging/app_logger_test.dart: AppLogger.redact redacts a password field
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/logging/app_logger_test.dart: AppLogger.redact redacts bearer tokens and cookies case-insensitively
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/logging/app_logger_test.dart: AppLogger.redact redacts a standalone bearer credential
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/logging/app_logger_test.dart: AppLogger.redact leaves non-sensitive text untouched
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/core/logging/app_logger_test.dart: AppLogger.formatRecord keeps diagnostic context while sanitizing error and stack trace
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/shell/presentation/app_shell_test.dart: shows Projects, Board, Tasks, and the app title
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/domain/project_test.dart: Project.fromJson parses a full response
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/domain/project_test.dart: Project.fromJson parses every backend status value
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/domain/project_test.dart: Project.fromJson an unrecognized status degrades to unknown instead of throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/domain/project_test.dart: Project.fromJson a missing status degrades to unknown
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/domain/project_test.dart: Project.fromJson an unrecognized area degrades to null instead of throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/domain/project_test.dart: Project.fromJson nullable fields are genuinely optional
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/domain/project_test.dart: Project.fromJson throws on a missing required field
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/domain/project_test.dart: Project.fromJson equality and hashCode are value-based
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/shell/presentation/app_shell_test.dart: tapping the Board destination navigates to /board
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/shell/presentation/app_shell_test.dart: tapping the Tasks destination navigates to /tasks
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/shell/presentation/app_shell_test.dart: task detail routes keep Tasks selected
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/shell/presentation/app_shell_test.dart: the account menu shows the signed-in user's email
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/shell/presentation/app_shell_test.dart: sign out calls AuthRepository.logout
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/shell/presentation/app_shell_test.dart: sign out everywhere calls AuthRepository.logoutAll
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/selected_project_controller_test.dart: starts at null with nobody signed in
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/selected_project_controller_test.dart: restores a previously persisted selection once signed in
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/selected_project_controller_test.dart: select() updates state and persists it for the signed-in user
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/selected_project_controller_test.dart: a late restoration never overwrites a newer explicit selection
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/selected_project_controller_test.dart: pruneIfMissing clears a selection that is no longer available
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/selected_project_controller_test.dart: pruneIfMissing keeps a selection that is still available
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/selected_project_controller_test.dart: logging out clears the selection in memory without touching storage
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/selected_project_controller_test.dart: switching accounts never shows the previous account's selection
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/presentation/projects_screen_test.dart: shows a loading indicator, then the project list
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/presentation/projects_screen_test.dart: sorts projects by name for a stable order
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/presentation/projects_screen_test.dart: shows the empty state when there are no projects
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/presentation/projects_screen_test.dart: shows an error state with a retry action, which recovers
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/presentation/projects_screen_test.dart: an offline failure shows the offline message, no retry button
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/presentation/projects_screen_test.dart: tapping a project selects it and shows a confirmation
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/presentation/projects_screen_test.dart: pull-to-refresh re-fetches the list
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/presentation/projects_screen_test.dart: a selection restored after the project list has already loaded is still pruned if stale
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_controller_test.dart: starts in AsyncLoading before the fetch resolves
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_controller_test.dart: a successful load exposes the projects as AsyncData
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_controller_test.dart: an empty backend list surfaces as an empty AsyncData
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_controller_test.dart: a repository failure surfaces as AsyncError carrying the AppFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_controller_test.dart: refresh() re-fetches and replaces the list on success
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_controller_test.dart: refresh() (retry) recovers from an error into AsyncData on success
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_controller_test.dart: refresh() keeps the previous list visible while re-fetching
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_controller_test.dart: an older in-flight refresh() does not clobber a newer one's result
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_controller_test.dart: different user ids never share a cached project list
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/project_selection_store_test.dart: reads null when nothing has been stored for that user
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/project_selection_store_test.dart: round-trips a written value
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/project_selection_store_test.dart: is namespaced per user id
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/project_selection_store_test.dart: clear removes only that user's value
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/project_selection_store_test.dart: overwriting a value replaces the previous one
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_repository_test.dart: successful load requests GET /api/v1/projects and decodes it
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_repository_test.dart: an empty backend array decodes to an empty list
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_repository_test.dart: a 401 maps to UnauthorizedFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_repository_test.dart: a 500 maps to ServerFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_repository_test.dart: a connection error with no network reports OfflineFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_repository_test.dart: a non-array response body maps to UnknownFailure instead of throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/projects/data/projects_repository_test.dart: a malformed item (missing required field) maps to UnknownFailure instead of throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/domain/user_test.dart: User.fromJson parses a full response
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/domain/user_test.dart: User.fromJson defaults to free/user for unrecognized or missing tier/role
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/domain/user_test.dart: User.fromJson equality is value-based
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/domain/session_state_test.dart: SessionState.userOrNull is null for unknown
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/domain/session_state_test.dart: SessionState.userOrNull is null for unauthenticated
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/domain/session_state_test.dart: SessionState.userOrNull is the user for authenticated
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/domain/session_state_test.dart: SessionState.userOrNull is the previous user for refreshing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/domain/session_state_test.dart: SessionState.userOrNull is null for unrecoverable
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/domain/session_state_test.dart: pattern matching distinguishes every variant
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/presentation/sign_in_screen_test.dart: shows validation errors for empty fields without calling the API
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/presentation/sign_in_screen_test.dart: shows the failure message when login fails
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/presentation/register_screen_test.dart: rejects a password shorter than 8 characters
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/presentation/register_screen_test.dart: shows the failure message when registration fails
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_credentials_never_logged_test.dart: login/register/refresh bodies are never logged in the clear
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_result_test.dart: AuthResult.fromJson parses the native shape (refreshToken present)
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_result_test.dart: AuthResult.fromJson parses the web shape (no refreshToken field)
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_api_test.dart: register posts to the native route with a platform field
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_api_test.dart: register posts to the web route with no platform field
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_api_test.dart: login posts to the native route with a platform field
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_api_test.dart: login posts to the web route
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_api_test.dart: refresh sends the refresh token in the body on native
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_api_test.dart: refresh sends no body on web (the cookie is the credential)
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_api_test.dart: logout reports a failure result instead of throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_api_test.dart: logoutAll posts to the native logout-all route
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_api_test.dart: logoutAll posts to the web logout-all route
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: startup restoration (native) no stored token -> unauthenticated, without calling the API
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: startup restoration (native) a stored token that refreshes successfully -> authenticated
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: startup restoration (native) a stored token that is rejected -> storage cleared, unauthenticated
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: startup restoration (native) a corrupted/unreadable stored token -> unauthenticated, not a crash
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: startup restoration (web) a successful silent refresh (ambient cookie) -> authenticated
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: startup restoration (web) no cookie / refresh rejected -> unauthenticated
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: login success authenticates and returns the user
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: login failure stays unauthenticated and returns the failure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: register success authenticates and returns the user
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: refreshAccessToken (AuthSession contract) success updates the access token and persists the rotated refresh token
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: refreshAccessToken (AuthSession contract) failure returns null without itself signing out
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: refreshAccessToken (AuthSession contract) on web, never reads/writes storage
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: forceSignOut clears the access token, deletes stored credentials, and signs out
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: logout / logoutAll logout signs out locally even when the revoke call fails
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/auth_repository_test.dart: logout / logoutAll logoutAll signs out locally even when the revoke call fails
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/secure_token_storage_test.dart: NoopTokenStorage never returns a stored token
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/secure_token_storage_test.dart: NoopTokenStorage write and delete are no-ops that never throw
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/secure_token_storage_test.dart: FlutterSecureTokenStorage readRefreshToken returns null instead of throwing when storage is unavailable
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/secure_token_storage_test.dart: FlutterSecureTokenStorage deleteRefreshToken completes instead of throwing when storage is unavailable
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/client_platform_test.dart: clientPlatformFrom is web whenever isWeb is true, regardless of target platform
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/client_platform_test.dart: clientPlatformFrom maps each native target platform
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/auth/data/client_platform_test.dart: clientPlatformFrom falls back to linux for an unsupported target rather than throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/domain/task_write_input_test.dart: create defaults mirror Tracker-BE task defaults
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/domain/task_write_input_test.dart: request JSON trims strings and serializes date-only values
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/domain/task_write_input_test.dart: editing preserves hidden full-PUT fields and recurrence
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/domain/task_test.dart: decodes the backend TaskResponse fields used by slice 3
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/domain/task_test.dart: unknown enum values degrade safely
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/domain/task_test.dart: YEARLY recurrence decodes and round-trips without being cleared
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/domain/task_test.dart: archived is true only for done and cancelled
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_edit_screen_test.dart: a completed task cannot be edited through a direct route
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/tasks_screen_test.dart: renders the first page and an explicit load-more action
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/tasks_screen_test.dart: load more appends the next page
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/tasks_screen_test.dart: project id is passed to the paginated query
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/tasks_screen_test.dart: empty state includes a create action
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/tasks_screen_test.dart: repository failure uses the shared error presentation
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_detail_screen_test.dart: renders task details from GET /tasks/{id}
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_detail_screen_test.dart: failure uses shared error state and retry
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/task_write_controller_test.dart: a second create tap while submitting cannot issue another POST
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/task_write_controller_test.dart: update carries cached board column into a form payload that omits it
+::group::❌ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_form_screen_test.dart: title is required before a create request can be sent (failed)
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following assertion was thrown building TextField(controller:
+TextEditingController#6a520(TextEditingValue(text: ┤├, selection: TextSelection.invalid, composing:
+TextRange(start: -1, end: -1))), enabled: true, decoration: InputDecoration(labelText: "Title",
+floatingLabelBehavior: FloatingLabelBehavior.auto, floatingLabelAlignment:
+FloatingLabelAlignment.start, alignLabelWithHint: false), autofocus: true, autocorrect: true,
+maxLength: 255, dirty, dependencies: [MediaQuery, UnmanagedRestorationScope], state:
+_TextFieldState#b59d1):
+No Material widget found.
+TextField widgets require a Material widget ancestor within the closest LookupBoundary.
+In Material Design, most widgets are conceptually "printed" on a sheet of material. In Flutter's
+material library, that material is represented by the Material widget. It is the Material widget
+that renders ink splashes, for instance. Because of this, many material library widgets require that
+there be a Material widget in the tree above them.
+To introduce a Material widget, you can either directly include one, or use a widget that contains
+Material itself, such as a Card, Dialog, Drawer, or Scaffold.
+The specific widget that could not find a Material ancestor was:
+  TextField
+The ancestors of this widget were:
+  ...
+  UnmanagedRestorationScope
+  Semantics
+  TextFormField
+  RepaintBoundary
+  IndexedSemantics
+  ...
+
+The relevant error-causing widget was:
+  TextFormField
+  TextFormField:file:///home/runner/work/Tracker-Flutter/Tracker-Flutter/lib/features/tasks/presentation/task_form_screen.dart:284:11
+
+When the exception was thrown, this was the stack:
+#0      debugCheckHasMaterial.<anonymous closure> (package:flutter/src/material/debug.dart:40:7)
+#1      debugCheckHasMaterial (package:flutter/src/material/debug.dart:67:4)
+#2      _TextFieldState.build (package:flutter/src/material/text_field.dart:1531:12)
+#3      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#4      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#5      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#6      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#7      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5799:5)
+#8      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5973:11)
+#9      ComponentElement.mount (package:flutter/src/widgets/framework.dart:5793:5)
+...     Normal element mounting (58 frames)
+#67     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#68     Element.updateChild (package:flutter/src/widgets/framework.dart:4059:18)
+#69     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1086:37)
+#70     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1071:20)
+#71     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3101:19)
+#72     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1061:12)
+#73     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#74     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3026:17)
+#75     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#76     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3025:14)
+#77     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#78     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#79     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#80     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#81     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#82     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#83     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#84     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#85     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#86     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#87     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#88     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#89     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#90     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#91     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#92     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#93     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#94     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#95     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#96     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#97     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#98     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#99     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#100    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#101    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#102    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#103    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#104    _RenderCustomClip.performLayout (package:flutter/src/rendering/proxy_box.dart:1549:11)
+#105    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#106    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#107    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#108    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#109    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#110    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#111    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#112    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#113    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#114    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#115    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#116    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#117    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#118    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#119    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#120    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#121    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#122    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#123    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#124    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#125    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#126    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#127    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#128    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#129    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#130    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#131    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#132    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#133    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#134    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#135    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#136    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#137    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#138    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#139    RenderOffstage.performLayout (package:flutter/src/rendering/proxy_box.dart:3923:13)
+#140    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#141    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#142    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#143    _RenderTheaterMixin.layoutChild (package:flutter/src/widgets/overlay.dart:1124:13)
+#144    _RenderTheater.performLayout (package:flutter/src/widgets/overlay.dart:1481:9)
+#145    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#146    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#147    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#148    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#149    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#150    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#151    RenderCustomPaint.performLayout (package:flutter/src/rendering/custom_paint.dart:574:11)
+#152    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#153    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#154    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#155    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#156    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#157    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#158    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#159    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#160    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#161    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#162    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#163    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#164    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#165    RenderView.performLayout (package:flutter/src/rendering/view.dart:292:12)
+#166    RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2755:7)
+#167    PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#168    PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#169    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2433:27)
+#170    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:509:5)
+#171    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#172    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#173    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2260:9)
+#176    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#177    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2249:27)
+#178    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#181    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#182    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#183    main.pump (file:///home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_form_screen_test.dart:67:18)
+#184    main.<anonymous closure> (file:///home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_form_screen_test.dart:102:11)
+#185    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#186    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following StateError was thrown running a test:
+Bad state: No element
+
+When the exception was thrown, this was the stack:
+#0      Iterable.single (dart:core/iterable.dart:694:25)
+#1      WidgetController.element (package:flutter_test/src/controller.dart:888:30)
+#2      WidgetController.dragUntilVisible.<anonymous closure> (package:flutter_test/src/controller.dart:2482:38)
+<asynchronous suspension>
+#3      TestAsyncUtils.guard.<anonymous closure> (package:flutter_test/src/test_async_utils.dart:130:27)
+<asynchronous suspension>
+#4      main.<anonymous closure> (file:///home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_form_screen_test.dart:103:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  title is required before a create request can be sent
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Test failed. See exception logs above.
+The test description was: title is required before a create request can be sent
+
+::endgroup::
+::group::❌ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_form_screen_test.dart: successful create keeps selected project scope and opens detail (failed)
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following assertion was thrown building TextField(controller:
+TextEditingController#d02cc(TextEditingValue(text: ┤├, selection: TextSelection.invalid, composing:
+TextRange(start: -1, end: -1))), enabled: true, decoration: InputDecoration(labelText: "Title",
+floatingLabelBehavior: FloatingLabelBehavior.auto, floatingLabelAlignment:
+FloatingLabelAlignment.start, alignLabelWithHint: false), autofocus: true, autocorrect: true,
+maxLength: 255, dirty, dependencies: [MediaQuery, UnmanagedRestorationScope], state:
+_TextFieldState#b97bc):
+No Material widget found.
+TextField widgets require a Material widget ancestor within the closest LookupBoundary.
+In Material Design, most widgets are conceptually "printed" on a sheet of material. In Flutter's
+material library, that material is represented by the Material widget. It is the Material widget
+that renders ink splashes, for instance. Because of this, many material library widgets require that
+there be a Material widget in the tree above them.
+To introduce a Material widget, you can either directly include one, or use a widget that contains
+Material itself, such as a Card, Dialog, Drawer, or Scaffold.
+The specific widget that could not find a Material ancestor was:
+  TextField
+The ancestors of this widget were:
+  ...
+  UnmanagedRestorationScope
+  Semantics
+  TextFormField
+  RepaintBoundary
+  IndexedSemantics
+  ...
+
+The relevant error-causing widget was:
+  TextFormField
+  TextFormField:file:///home/runner/work/Tracker-Flutter/Tracker-Flutter/lib/features/tasks/presentation/task_form_screen.dart:284:11
+
+When the exception was thrown, this was the stack:
+#0      debugCheckHasMaterial.<anonymous closure> (package:flutter/src/material/debug.dart:40:7)
+#1      debugCheckHasMaterial (package:flutter/src/material/debug.dart:67:4)
+#2      _TextFieldState.build (package:flutter/src/material/text_field.dart:1531:12)
+#3      StatefulElement.build (package:flutter/src/widgets/framework.dart:5931:27)
+#4      ComponentElement.performRebuild (package:flutter/src/widgets/framework.dart:5817:15)
+#5      StatefulElement.performRebuild (package:flutter/src/widgets/framework.dart:5982:11)
+#6      Element.rebuild (package:flutter/src/widgets/framework.dart:5529:7)
+#7      ComponentElement._firstBuild (package:flutter/src/widgets/framework.dart:5799:5)
+#8      StatefulElement._firstBuild (package:flutter/src/widgets/framework.dart:5973:11)
+#9      ComponentElement.mount (package:flutter/src/widgets/framework.dart:5793:5)
+...     Normal element mounting (58 frames)
+#67     Element.inflateWidget (package:flutter/src/widgets/framework.dart:4587:20)
+#68     Element.updateChild (package:flutter/src/widgets/framework.dart:4059:18)
+#69     SliverMultiBoxAdaptorElement.updateChild (package:flutter/src/widgets/sliver.dart:1086:37)
+#70     SliverMultiBoxAdaptorElement.createChild.<anonymous closure> (package:flutter/src/widgets/sliver.dart:1071:20)
+#71     BuildOwner.buildScope (package:flutter/src/widgets/framework.dart:3101:19)
+#72     SliverMultiBoxAdaptorElement.createChild (package:flutter/src/widgets/sliver.dart:1061:12)
+#73     RenderSliverMultiBoxAdaptor._createOrObtainChild.<anonymous closure> (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:368:23)
+#74     RenderObject.invokeLayoutCallback.<anonymous closure> (package:flutter/src/rendering/object.dart:3026:17)
+#75     PipelineOwner._enableMutationsToDirtySubtrees (package:flutter/src/rendering/object.dart:1223:15)
+#76     RenderObject.invokeLayoutCallback (package:flutter/src/rendering/object.dart:3025:14)
+#77     RenderSliverMultiBoxAdaptor._createOrObtainChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:357:5)
+#78     RenderSliverMultiBoxAdaptor.insertAndLayoutChild (package:flutter/src/rendering/sliver_multi_box_adaptor.dart:517:5)
+#79     RenderSliverList.performLayout.advance (package:flutter/src/rendering/sliver_list.dart:238:19)
+#80     RenderSliverList.performLayout (package:flutter/src/rendering/sliver_list.dart:278:12)
+#81     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#82     RenderSliverEdgeInsetsPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:133:12)
+#83     RenderSliverPadding.performLayout (package:flutter/src/rendering/sliver_padding.dart:368:11)
+#84     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#85     RenderViewportBase.layoutChildSequence (package:flutter/src/rendering/viewport.dart:821:13)
+#86     RenderViewport._attemptLayout (package:flutter/src/rendering/viewport.dart:1831:12)
+#87     RenderViewport.performLayout (package:flutter/src/rendering/viewport.dart:1724:20)
+#88     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#89     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#90     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#91     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#92     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#93     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#94     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#95     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#96     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#97     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#98     RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#99     RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#100    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#101    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#102    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#103    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#104    _RenderCustomClip.performLayout (package:flutter/src/rendering/proxy_box.dart:1549:11)
+#105    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#106    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#107    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#108    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#109    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#110    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#111    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#112    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#113    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#114    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#115    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#116    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#117    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#118    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#119    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#120    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#121    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#122    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#123    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#124    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#125    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#126    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#127    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#128    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#129    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#130    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#131    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#132    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#133    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#134    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#135    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#136    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#137    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#138    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#139    RenderOffstage.performLayout (package:flutter/src/rendering/proxy_box.dart:3923:13)
+#140    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#141    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#142    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#143    _RenderTheaterMixin.layoutChild (package:flutter/src/widgets/overlay.dart:1124:13)
+#144    _RenderTheater.performLayout (package:flutter/src/widgets/overlay.dart:1481:9)
+#145    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#146    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#147    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#148    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#149    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#150    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#151    RenderCustomPaint.performLayout (package:flutter/src/rendering/custom_paint.dart:574:11)
+#152    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#153    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#154    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#155    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#156    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#157    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#158    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#159    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#160    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#161    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#162    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#163    RenderProxyBoxMixin.performLayout (package:flutter/src/rendering/proxy_box.dart:118:18)
+#164    RenderObject.layout (package:flutter/src/rendering/object.dart:2907:7)
+#165    RenderView.performLayout (package:flutter/src/rendering/view.dart:292:12)
+#166    RenderObject._layoutWithoutResize (package:flutter/src/rendering/object.dart:2755:7)
+#167    PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1174:18)
+#168    PipelineOwner.flushLayout (package:flutter/src/rendering/object.dart:1187:15)
+#169    AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2433:27)
+#170    RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:509:5)
+#171    SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#172    SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#173    AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2260:9)
+#176    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#177    AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2249:27)
+#178    WidgetTester.pumpWidget.<anonymous closure> (package:flutter_test/src/widget_tester.dart:598:22)
+#181    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#182    WidgetTester.pumpWidget (package:flutter_test/src/widget_tester.dart:595:27)
+#183    main.pump (file:///home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_form_screen_test.dart:67:18)
+#184    main.<anonymous closure> (file:///home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_form_screen_test.dart:122:13)
+#185    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:29)
+<asynchronous suspension>
+#186    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following StateError was thrown running a test:
+Bad state: No element
+
+When the exception was thrown, this was the stack:
+#0      Iterable.single (dart:core/iterable.dart:694:25)
+#1      WidgetController.state (package:flutter_test/src/controller.dart:932:42)
+#2      WidgetTester.showKeyboard.<anonymous closure> (package:flutter_test/src/widget_tester.dart:1125:42)
+#5      TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#6      WidgetTester.showKeyboard (package:flutter_test/src/widget_tester.dart:1124:27)
+#7      WidgetTester.enterText.<anonymous closure> (package:flutter_test/src/widget_tester.dart:1160:13)
+#10     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#11     WidgetTester.enterText (package:flutter_test/src/widget_tester.dart:1159:27)
+#12     main.<anonymous closure> (file:///home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/presentation/task_form_screen_test.dart:124:20)
+<asynchronous suspension>
+#13     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#14     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+
+The test description was:
+  successful create keeps selected project scope and opens detail
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+Test failed. See exception logs above.
+The test description was: successful create keeps selected project scope and opens detail
+
+::endgroup::
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_repository_test.dart: fetchTasks uses bounded pagination, project filter, and active statuses
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_repository_test.dart: fetchTask loads a single task by id
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_repository_test.dart: create assigns selected project only after POST succeeds
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_repository_test.dart: project assignment failure does not turn a created task into failure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_repository_test.dart: update sends one full PUT payload
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_repository_test.dart: malformed paginated body maps to UnknownFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_controller_test.dart: first page is bounded and scoped to the selected project
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_controller_test.dart: loadNextPage appends the next bounded page without duplicates
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_controller_test.dart: load-more failure keeps loaded tasks visible and retryable
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_controller_test.dart: initial repository failure surfaces as AsyncError
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/tasks/data/tasks_controller_test.dart: task detail loads and refreshes the requested id
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/domain/board_column_test.dart: BoardColumn.fromJson parses a full response
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/domain/board_column_test.dart: BoardColumn.fromJson parses every backend status value
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/domain/board_column_test.dart: BoardColumn.fromJson an unrecognized status degrades to unknown instead of throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/domain/board_column_test.dart: BoardColumn.fromJson a missing status degrades to unknown
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/domain/board_column_test.dart: BoardColumn.fromJson throws on a missing required field
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/domain/board_column_test.dart: BoardColumn.fromJson equality and hashCode are value-based
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/presentation/board_screen_test.dart: shows a loading indicator, then the board columns
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/presentation/board_screen_test.dart: shows the empty state when there are no columns
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/presentation/board_screen_test.dart: shows an error state with a retry action, which recovers
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/presentation/board_screen_test.dart: an unauthorized failure shows the session-expired message, no retry button
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_repository_test.dart: successful load requests GET /api/v1/board-columns and decodes it
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_repository_test.dart: an empty backend array decodes to an empty list
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_repository_test.dart: columns already ordered by position are returned in that order
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_repository_test.dart: defensively re-sorts by position even if the wire order is wrong
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/presentation/board_screen_test.dart: an offline failure shows the offline message
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_repository_test.dart: a 401 maps to UnauthorizedFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_repository_test.dart: a 500 maps to ServerFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_repository_test.dart: a connection error with no network reports OfflineFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_repository_test.dart: a non-array response body maps to UnknownFailure instead of throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_repository_test.dart: a malformed item (missing required field) maps to UnknownFailure instead of throwing
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/presentation/board_screen_test.dart: pull-to-refresh re-fetches the columns
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/presentation/board_screen_test.dart: columns render in the order the repository returns (position order)
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/presentation/board_screen_test.dart: changing the selected project does not reload or change the board columns
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: starts in AsyncLoading before the fetch resolves
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: a successful load exposes the columns as AsyncData
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: an empty backend list surfaces as an empty AsyncData
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: a repository failure surfaces as AsyncError carrying the AppFailure
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: the default build-retry policy is disabled (an AppFailure never triggers Riverpod's silent retry)
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: refresh() re-fetches and replaces the list on success
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: refresh() (retry) recovers from an error into AsyncData on success
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: refresh() keeps the previous list visible while re-fetching
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: an older in-flight refresh() does not clobber a newer one's result
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: different user ids never share a cached column list
+✅ /home/runner/work/Tracker-Flutter/Tracker-Flutter/test/features/board_columns/data/board_columns_controller_test.dart: is autoDispose: the cached list is dropped once the last listener goes away, so the next account never reads a leftover value
+
+::error::258 tests passed, 2 failed.
