@@ -15,9 +15,13 @@ typedef FetchTasksHandler =
 class FakeTasksRepository implements TasksRepository {
   FetchTasksHandler? fetchTasksHandler;
   Future<Result<Task>> Function(int id)? fetchTaskHandler;
-  Future<Result<TaskCreateOutcome>> Function(TaskWriteInput input, int? projectId)?
+  Future<Result<TaskCreateOutcome>> Function(
+    TaskWriteInput input,
+    int? projectId,
+  )?
   createTaskHandler;
-  Future<Result<Task>> Function(int id, TaskWriteInput input)? updateTaskHandler;
+  Future<Result<Task>> Function(int id, TaskWriteInput input)?
+  updateTaskHandler;
 
   int fetchTasksCalls = 0;
   int fetchTaskCalls = 0;

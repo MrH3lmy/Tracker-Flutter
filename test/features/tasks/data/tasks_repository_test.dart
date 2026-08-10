@@ -139,7 +139,10 @@ void main() {
       return jsonResponseBody(taskJson(projectId: 9));
     });
 
-    final result = await built.repository.createTask(writeInput(), projectId: 9);
+    final result = await built.repository.createTask(
+      writeInput(),
+      projectId: 9,
+    );
 
     expect(result.isSuccess, isTrue);
     expect(result.valueOrNull!.task.projectId, 9);
@@ -152,25 +155,33 @@ void main() {
     expect(built.adapter.requests[1].data, {'projectId': 9});
   });
 
-  test('project assignment failure does not turn a created task into failure', () async {
-    final built = build((options, call) {
-      if (call == 1) {
-        return jsonResponseBody(taskJson(projectId: null), statusCode: 201);
-      }
-      return jsonResponseBody(
-        {'message': 'project unavailable'},
-        statusCode: 500,
+  test(
+    'project assignment failure does not turn a created task into failure',
+    () async {
+      final built = build((options, call) {
+        if (call == 1) {
+          return jsonResponseBody(taskJson(projectId: null), statusCode: 201);
+        }
+        return jsonResponseBody({
+          'message': 'project unavailable',
+        }, statusCode: 500);
+      });
+
+      final result = await built.repository.createTask(
+        writeInput(),
+        projectId: 9,
       );
-    });
 
-    final result = await built.repository.createTask(writeInput(), projectId: 9);
-
-    expect(result.isSuccess, isTrue);
-    expect(result.valueOrNull!.task.id, 1);
-    expect(result.valueOrNull!.task.projectId, isNull);
-    expect(result.valueOrNull!.projectAssignmentFailure, isA<ServerFailure>());
-    expect(built.adapter.callCount, 2);
-  });
+      expect(result.isSuccess, isTrue);
+      expect(result.valueOrNull!.task.id, 1);
+      expect(result.valueOrNull!.task.projectId, isNull);
+      expect(
+        result.valueOrNull!.projectAssignmentFailure,
+        isA<ServerFailure>(),
+      );
+      expect(built.adapter.callCount, 2);
+    },
+  );
 
   test('update sends one full PUT payload', () async {
     final built = build((options, call) => jsonResponseBody(taskJson()));

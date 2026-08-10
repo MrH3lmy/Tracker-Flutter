@@ -68,10 +68,7 @@ class ApiTasksRepository implements TasksRepository {
 
   @override
   Future<Result<Task>> fetchTask(int id) {
-    return _client.get<Task>(
-      '/api/v1/tasks/$id',
-      decode: _decodeTask,
-    );
+    return _client.get<Task>('/api/v1/tasks/$id', decode: _decodeTask);
   }
 
   @override

@@ -32,10 +32,9 @@ class TaskWriteController extends Notifier<TaskWriteState> {
     if (state.isSubmitting) return null;
     state = const TaskWriteState(isSubmitting: true);
 
-    final result = await ref.read(tasksRepositoryProvider).createTask(
-      input,
-      projectId: projectId,
-    );
+    final result = await ref
+        .read(tasksRepositoryProvider)
+        .createTask(input, projectId: projectId);
 
     final outcome = result.valueOrNull;
     if (outcome == null) {
@@ -60,10 +59,9 @@ class TaskWriteController extends Notifier<TaskWriteState> {
     if (state.isSubmitting) return null;
     state = const TaskWriteState(isSubmitting: true);
 
-    final result = await ref.read(tasksRepositoryProvider).updateTask(
-      taskId,
-      input,
-    );
+    final result = await ref
+        .read(tasksRepositoryProvider)
+        .updateTask(taskId, input);
     final task = result.valueOrNull;
     if (task == null) {
       state = TaskWriteState(failure: result.failureOrNull);

@@ -11,16 +11,14 @@ class TasksDestination extends ConsumerWidget {
   const TasksDestination({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => TasksScreen(
-    projectId: ref.watch(selectedProjectControllerProvider),
-  );
+  Widget build(BuildContext context, WidgetRef ref) =>
+      TasksScreen(projectId: ref.watch(selectedProjectControllerProvider));
 }
 
 class TaskCreateDestination extends ConsumerWidget {
   const TaskCreateDestination({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => TaskCreateScreen(
-    projectId: ref.watch(selectedProjectControllerProvider),
-  );
+  Widget build(BuildContext context, WidgetRef ref) =>
+      TaskCreateScreen(projectId: ref.watch(selectedProjectControllerProvider));
 }

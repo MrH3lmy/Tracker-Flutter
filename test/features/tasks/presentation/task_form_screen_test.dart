@@ -24,23 +24,24 @@ const _user = User(
   role: UserRole.user,
 );
 
-Task _createdTask(int id, String title, {int? projectId = 55}) => Task.fromJson({
-  'id': id,
-  'title': title,
-  'description': null,
-  'riskLevel': 'LOW',
-  'projectId': projectId,
-  'createdDate': '2026-08-11T01:00:00',
-  'updatedDate': '2026-08-11T01:00:00',
-  'important': false,
-  'status': 'BACKLOG',
-  'area': 'PERSONAL',
-  'effort': 'MEDIUM',
-  'overdue': false,
-  'urgent': false,
-  'priorityScore': 0,
-  'position': 1000,
-});
+Task _createdTask(int id, String title, {int? projectId = 55}) =>
+    Task.fromJson({
+      'id': id,
+      'title': title,
+      'description': null,
+      'riskLevel': 'LOW',
+      'projectId': projectId,
+      'createdDate': '2026-08-11T01:00:00',
+      'updatedDate': '2026-08-11T01:00:00',
+      'important': false,
+      'status': 'BACKLOG',
+      'area': 'PERSONAL',
+      'effort': 'MEDIUM',
+      'overdue': false,
+      'urgent': false,
+      'priorityScore': 0,
+      'position': 1000,
+    });
 
 void main() {
   Future<void> pump(
@@ -56,9 +57,8 @@ void main() {
         ),
         GoRoute(
           path: '/tasks/:id',
-          builder: (context, state) => Scaffold(
-            body: Text('detail ${state.pathParameters['id']}'),
-          ),
+          builder: (context, state) =>
+              Scaffold(body: Text('detail ${state.pathParameters['id']}')),
         ),
       ],
     );
@@ -109,29 +109,30 @@ void main() {
     expect(repo.createTaskCalls, 0);
   });
 
-  testWidgets('successful create keeps selected project scope and opens detail', (
-    tester,
-  ) async {
-    final repo = FakeTasksRepository()
-      ..createTaskHandler = (input, projectId) async => Result.success(
-        TaskCreateOutcome(
-          task: _createdTask(44, input.title.trim(), projectId: projectId),
-          projectAssignmentFailure: null,
-        ),
+  testWidgets(
+    'successful create keeps selected project scope and opens detail',
+    (tester) async {
+      final repo = FakeTasksRepository()
+        ..createTaskHandler = (input, projectId) async => Result.success(
+          TaskCreateOutcome(
+            task: _createdTask(44, input.title.trim(), projectId: projectId),
+            projectAssignmentFailure: null,
+          ),
+        );
+      await pump(tester, repository: repo);
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Title'),
+        'Created from Flutter',
       );
-    await pump(tester, repository: repo);
+      await scrollToSubmit(tester);
+      await tester.tap(find.widgetWithText(FilledButton, 'Create task'));
+      await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.widgetWithText(TextFormField, 'Title'),
-      'Created from Flutter',
-    );
-    await scrollToSubmit(tester);
-    await tester.tap(find.widgetWithText(FilledButton, 'Create task'));
-    await tester.pumpAndSettle();
-
-    expect(repo.createTaskCalls, 1);
-    expect(repo.lastProjectId, 55);
-    expect(repo.lastWriteInput!.title, 'Created from Flutter');
-    expect(find.text('detail 44'), findsOneWidget);
-  });
+      expect(repo.createTaskCalls, 1);
+      expect(repo.lastProjectId, 55);
+      expect(repo.lastWriteInput!.title, 'Created from Flutter');
+      expect(find.text('detail 44'), findsOneWidget);
+    },
+  );
 }

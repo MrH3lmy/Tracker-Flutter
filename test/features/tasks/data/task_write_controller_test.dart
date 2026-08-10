@@ -28,42 +28,45 @@ Task _task(int id) => Task.fromJson({
 });
 
 void main() {
-  test('a second create tap while submitting cannot issue another POST', () async {
-    final completer = Completer<Result<TaskCreateOutcome>>();
-    final repository = FakeTasksRepository()
-      ..createTaskHandler = (input, projectId) => completer.future;
-    final container = ProviderContainer(
-      overrides: [tasksRepositoryProvider.overrideWithValue(repository)],
-    );
-    addTearDown(container.dispose);
-    final subscription = container.listen(
-      taskWriteControllerProvider,
-      (previous, next) {},
-    );
-    addTearDown(subscription.close);
+  test(
+    'a second create tap while submitting cannot issue another POST',
+    () async {
+      final completer = Completer<Result<TaskCreateOutcome>>();
+      final repository = FakeTasksRepository()
+        ..createTaskHandler = (input, projectId) => completer.future;
+      final container = ProviderContainer(
+        overrides: [tasksRepositoryProvider.overrideWithValue(repository)],
+      );
+      addTearDown(container.dispose);
+      final subscription = container.listen(
+        taskWriteControllerProvider,
+        (previous, next) {},
+      );
+      addTearDown(subscription.close);
 
-    final controller = container.read(taskWriteControllerProvider.notifier);
-    final first = controller.create(
-      userId: 1,
-      input: TaskWriteInput.defaults(),
-      projectId: 7,
-    );
-    final second = await controller.create(
-      userId: 1,
-      input: TaskWriteInput.defaults(),
-      projectId: 7,
-    );
+      final controller = container.read(taskWriteControllerProvider.notifier);
+      final first = controller.create(
+        userId: 1,
+        input: TaskWriteInput.defaults(),
+        projectId: 7,
+      );
+      final second = await controller.create(
+        userId: 1,
+        input: TaskWriteInput.defaults(),
+        projectId: 7,
+      );
 
-    expect(second, isNull);
-    expect(repository.createTaskCalls, 1);
-    expect(container.read(taskWriteControllerProvider).isSubmitting, isTrue);
+      expect(second, isNull);
+      expect(repository.createTaskCalls, 1);
+      expect(container.read(taskWriteControllerProvider).isSubmitting, isTrue);
 
-    completer.complete(
-      Result.success(
-        TaskCreateOutcome(task: _task(10), projectAssignmentFailure: null),
-      ),
-    );
-    expect((await first)!.id, 10);
-    expect(container.read(taskWriteControllerProvider).isSubmitting, isFalse);
-  });
+      completer.complete(
+        Result.success(
+          TaskCreateOutcome(task: _task(10), projectAssignmentFailure: null),
+        ),
+      );
+      expect((await first)!.id, 10);
+      expect(container.read(taskWriteControllerProvider).isSubmitting, isFalse);
+    },
+  );
 }

@@ -191,7 +191,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(widget.isEditing ? 'Task updated' : 'Task created')),
+        SnackBar(
+          content: Text(widget.isEditing ? 'Task updated' : 'Task created'),
+        ),
       );
     }
     context.go('/tasks/${saved.id}');
@@ -258,8 +260,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
                 onPressed: writeState.isSubmitting
                     ? null
                     : () => widget.task == null
-                    ? context.go('/tasks')
-                    : context.go('/tasks/${widget.task!.id}'),
+                          ? context.go('/tasks')
+                          : context.go('/tasks/${widget.task!.id}'),
                 icon: const Icon(Icons.arrow_back),
               ),
               const SizedBox(width: AppSpacing.xs),
@@ -290,7 +292,8 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             validator: (value) {
               final trimmed = value?.trim() ?? '';
               if (trimmed.isEmpty) return 'Title is required';
-              if (trimmed.length > 255) return 'Title must be at most 255 characters';
+              if (trimmed.length > 255)
+                return 'Title must be at most 255 characters';
               return null;
             },
           ),
