@@ -5,19 +5,19 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/async_state_view.dart';
 import '../../auth/data/auth_repository.dart';
-import '../../projects/data/selected_project_controller.dart';
 import '../data/tasks_controller.dart';
 import '../domain/task.dart';
 
 class TasksScreen extends ConsumerWidget {
-  const TasksScreen({super.key});
+  const TasksScreen({super.key, required this.projectId});
+
+  final int? projectId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userId = ref.watch(
       authRepositoryProvider.select((session) => session.userOrNull?.id),
     );
-    final projectId = ref.watch(selectedProjectControllerProvider);
 
     if (userId == null) {
       return const Center(child: CircularProgressIndicator());
@@ -98,6 +98,12 @@ class _TaskList extends StatelessWidget {
                   Text(
                     '${state.tasks.length} of ${state.meta.totalCount}',
                     style: theme.textTheme.bodySmall,
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  FilledButton.icon(
+                    onPressed: () => context.go('/tasks/new'),
+                    icon: const Icon(Icons.add),
+                    label: const Text('New task'),
                   ),
                 ],
               ),
@@ -243,6 +249,12 @@ class _EmptyTasksState extends StatelessWidget {
                       ? 'Active tasks will show up here.'
                       : 'The selected project has no active tasks.',
                   textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                FilledButton.icon(
+                  onPressed: () => context.go('/tasks/new'),
+                  icon: const Icon(Icons.add),
+                  label: const Text('Create task'),
                 ),
               ],
             ),
