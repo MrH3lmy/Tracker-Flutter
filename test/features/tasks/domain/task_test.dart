@@ -74,6 +74,28 @@ void main() {
     expect(task.ageFlag, TaskAgeFlag.unknown);
   });
 
+  test('YEARLY recurrence decodes and round-trips without being cleared', () {
+    final task = Task.fromJson({
+      ...sample(),
+      'recurrence': {
+        'frequency': 'YEARLY',
+        'interval': 1,
+        'daysOfWeek': <String>[],
+        'dayOfMonth': null,
+        'annualDate': '--12-31',
+        'nextDueDate': '2026-12-31',
+        'lastCompletedDate': '2025-12-31',
+        'currentStreak': 2,
+        'longestStreak': 4,
+      },
+    });
+
+    expect(task.recurrence!.frequency, RecurrenceFrequency.annual);
+    expect(task.recurrence!.rawFrequency, 'YEARLY');
+    expect(task.recurrence!.toRequestJson()['frequency'], 'YEARLY');
+    expect(task.recurrence!.toRequestJson()['annualDate'], '--12-31');
+  });
+
   test('archived is true only for done and cancelled', () {
     expect(Task.fromJson(sample(status: 'DONE')).isArchived, isTrue);
     expect(Task.fromJson(sample(status: 'CANCELLED')).isArchived, isTrue);
