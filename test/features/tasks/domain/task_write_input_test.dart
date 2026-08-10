@@ -87,6 +87,7 @@ void main() {
     final json = TaskWriteInput.fromTask(task).toRequestJson();
     expect(json['actualMinutes'], 25);
     expect(json['parentTaskId'], 3);
+    expect(json['boardColumnId'], 2);
     expect(json['dependencyIds'], isNull);
     expect(json['recurrence'], {
       'frequency': 'YEARLY',
