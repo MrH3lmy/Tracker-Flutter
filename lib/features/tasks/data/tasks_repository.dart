@@ -34,7 +34,7 @@ class ApiTasksRepository implements TasksRepository {
       queryParameters: {
         'page': page,
         'size': size,
-        if (projectId != null) 'projectId': projectId,
+        'projectId': ?projectId,
         if (statuses.isNotEmpty)
           'status': statuses.map(taskStatusApiValue).toList(growable: false),
       },
