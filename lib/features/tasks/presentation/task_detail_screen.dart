@@ -23,7 +23,10 @@ class TaskDetailScreen extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final provider = taskDetailControllerProvider((userId: userId, taskId: taskId));
+    final provider = taskDetailControllerProvider((
+      userId: userId,
+      taskId: taskId,
+    ));
     final value = ref.watch(provider);
 
     return AsyncStateView<Task>(
@@ -49,7 +52,13 @@ class _TaskDetail extends StatelessWidget {
         Align(
           alignment: Alignment.centerLeft,
           child: TextButton.icon(
-            onPressed: context.canPop() ? context.pop : () => context.go('/tasks'),
+            onPressed: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/tasks');
+              }
+            },
             icon: const Icon(Icons.arrow_back),
             label: const Text('Back to tasks'),
           ),
@@ -118,7 +127,8 @@ class _TaskDetail extends StatelessWidget {
           title: 'Structure',
           rows: [
             if (task.projectId != null) ('Project', '#${task.projectId}'),
-            if (task.parentTaskId != null) ('Parent task', '#${task.parentTaskId}'),
+            if (task.parentTaskId != null)
+              ('Parent task', '#${task.parentTaskId}'),
             if (task.boardColumnId != null)
               ('Board column', '#${task.boardColumnId}'),
             ('Subtasks', '${task.completedSubtaskCount}/${task.subtaskCount}'),
