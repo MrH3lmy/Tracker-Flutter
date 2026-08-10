@@ -21,6 +21,7 @@ class TaskWriteInput {
     required this.waitingOn,
     required this.followUpDate,
     required this.recurrence,
+    this.boardColumnId,
   });
 
   factory TaskWriteInput.defaults() => const TaskWriteInput(
@@ -71,6 +72,7 @@ class TaskWriteInput {
     waitingOn: task.waitingOn,
     followUpDate: task.followUpDate,
     recurrence: task.recurrence,
+    boardColumnId: task.boardColumnId,
   );
 
   final String title;
@@ -87,9 +89,9 @@ class TaskWriteInput {
   final String? track;
   final String? phase;
 
-  /// Parent/dependencies/recurrence editing are later concerns. Parent and
-  /// recurrence are carried forward on PUT; dependencyIds is intentionally
-  /// omitted from the request so Tracker-BE keeps the existing dependencies.
+  /// Parent/dependencies/recurrence/board placement editing are later
+  /// concerns. Their existing values are carried forward on PUT; dependencyIds
+  /// remains null so Tracker-BE keeps the current dependency set.
   final int? parentTaskId;
   final bool important;
   final TaskStatus status;
@@ -99,6 +101,7 @@ class TaskWriteInput {
   final String? waitingOn;
   final DateTime? followUpDate;
   final TaskRecurrence? recurrence;
+  final int? boardColumnId;
 
   Map<String, dynamic> toRequestJson() => {
     'title': title.trim(),
@@ -119,10 +122,8 @@ class TaskWriteInput {
     'blockedReason': _trimOrNull(blockedReason),
     'waitingOn': _trimOrNull(waitingOn),
     'followUpDate': _dateOnly(followUpDate),
-    'boardColumnId': null,
+    'boardColumnId': boardColumnId,
     'position': null,
-    // Null means "leave dependency set unchanged" on UpdateTaskRequest.
-    // On create there is no existing set, so it is also the right default.
     'dependencyIds': null,
     'recurrence': recurrence?.toRequestJson(),
   };
