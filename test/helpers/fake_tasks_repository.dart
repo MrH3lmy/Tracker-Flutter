@@ -3,12 +3,13 @@ import 'package:tracker_flutter/core/result/result.dart';
 import 'package:tracker_flutter/features/tasks/data/tasks_repository.dart';
 import 'package:tracker_flutter/features/tasks/domain/task.dart';
 
-typedef FetchTasksHandler = Future<Result<PaginatedResult<Task>>> Function({
-  required int page,
-  required int size,
-  int? projectId,
-  required List<TaskStatus> statuses,
-});
+typedef FetchTasksHandler =
+    Future<Result<PaginatedResult<Task>>> Function({
+      required int page,
+      required int size,
+      int? projectId,
+      required List<TaskStatus> statuses,
+    });
 
 class FakeTasksRepository implements TasksRepository {
   FetchTasksHandler? fetchTasksHandler;

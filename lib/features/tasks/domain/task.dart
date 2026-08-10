@@ -275,7 +275,8 @@ RecurrenceFrequency _recurrenceFrequencyFromJson(String? raw) => switch (raw) {
   _ => RecurrenceFrequency.unknown,
 };
 
-DateTime? _dateFromJson(String? raw) => raw == null ? null : DateTime.parse(raw);
+DateTime? _dateFromJson(String? raw) =>
+    raw == null ? null : DateTime.parse(raw);
 DateTime? _dateTimeFromJson(String? raw) =>
     raw == null ? null : DateTime.parse(raw);
 

@@ -137,8 +137,18 @@ void main() {
             required List<TaskStatus> statuses,
           }) async => Result.success(
             page == 0
-                ? _page(0, [_task(1, 'First task')], totalCount: 2, hasNext: true)
-                : _page(1, [_task(2, 'Second task')], totalCount: 2, hasNext: false),
+                ? _page(
+                    0,
+                    [_task(1, 'First task')],
+                    totalCount: 2,
+                    hasNext: true,
+                  )
+                : _page(
+                    1,
+                    [_task(2, 'Second task')],
+                    totalCount: 2,
+                    hasNext: false,
+                  ),
           );
 
     await pump(tester, repository: repo);
@@ -181,9 +191,8 @@ void main() {
             required int size,
             int? projectId,
             required List<TaskStatus> statuses,
-          }) async => Result.success(
-            _page(0, const [], totalCount: 0, hasNext: false),
-          );
+          }) async =>
+              Result.success(_page(0, const [], totalCount: 0, hasNext: false));
 
     await pump(tester, repository: emptyRepo);
     await tester.pumpAndSettle();

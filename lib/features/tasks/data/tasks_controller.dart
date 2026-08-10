@@ -127,7 +127,9 @@ class TaskDetailController extends AsyncNotifier<Task> {
   Future<Task> build() => _load();
 
   Future<Task> _load() async {
-    final result = await ref.read(tasksRepositoryProvider).fetchTask(key.taskId);
+    final result = await ref
+        .read(tasksRepositoryProvider)
+        .fetchTask(key.taskId);
     return result.when(
       success: (task) => task,
       failure: (failure) => throw failure,

@@ -144,7 +144,11 @@ class _TaskTile extends StatelessWidget {
               const SizedBox(width: AppSpacing.xs),
             ],
             Expanded(
-              child: Text(task.title, maxLines: 2, overflow: TextOverflow.ellipsis),
+              child: Text(
+                task.title,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -181,7 +185,10 @@ class _LoadMoreFooter extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.sm),
-            OutlinedButton(onPressed: onLoadMore, child: const Text('Try again')),
+            OutlinedButton(
+              onPressed: onLoadMore,
+              child: const Text('Try again'),
+            ),
           ],
         ),
       );

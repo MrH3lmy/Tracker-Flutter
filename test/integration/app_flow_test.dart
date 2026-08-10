@@ -134,9 +134,8 @@ void main() {
                 ),
               );
             }
-        ..fetchTaskHandler = (id) async => Result.success(
-          _task(id, 'Build task details'),
-        );
+        ..fetchTaskHandler = (id) async =>
+            Result.success(_task(id, 'Build task details'));
 
       await tester.pumpWidget(
         ProviderScope(

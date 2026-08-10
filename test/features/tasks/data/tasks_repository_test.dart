@@ -61,33 +61,42 @@ void main() {
     'recurrence': null,
   };
 
-  test('fetchTasks uses bounded pagination, project filter, and active statuses', () async {
-    final built = build((options, call) => jsonResponseBody(
-      [taskJson],
-      headers: {
-        'x-total-count': ['51'],
-        'x-total-pages': ['2'],
-        'x-page': ['0'],
-        'x-page-size': ['50'],
-        'x-has-next': ['true'],
-      },
-    ));
+  test(
+    'fetchTasks uses bounded pagination, project filter, and active statuses',
+    () async {
+      final built = build(
+        (options, call) => jsonResponseBody(
+          [taskJson],
+          headers: {
+            'x-total-count': ['51'],
+            'x-total-pages': ['2'],
+            'x-page': ['0'],
+            'x-page-size': ['50'],
+            'x-has-next': ['true'],
+          },
+        ),
+      );
 
-    final result = await built.repository.fetchTasks(page: 0, size: 50, projectId: 9);
+      final result = await built.repository.fetchTasks(
+        page: 0,
+        size: 50,
+        projectId: 9,
+      );
 
-    expect(result.isSuccess, isTrue);
-    expect(result.valueOrNull!.items.single.title, 'First task');
-    expect(result.valueOrNull!.meta.totalCount, 51);
-    expect(result.valueOrNull!.meta.hasNext, isTrue);
+      expect(result.isSuccess, isTrue);
+      expect(result.valueOrNull!.items.single.title, 'First task');
+      expect(result.valueOrNull!.meta.totalCount, 51);
+      expect(result.valueOrNull!.meta.hasNext, isTrue);
 
-    final request = built.adapter.requests.single;
-    expect(request.path, '/api/v1/tasks');
-    expect(request.queryParameters['page'], 0);
-    expect(request.queryParameters['size'], 50);
-    expect(request.queryParameters['projectId'], 9);
-    expect(request.queryParameters['status'], contains('IN_PROGRESS'));
-    expect(request.queryParameters['status'], isNot(contains('DONE')));
-  });
+      final request = built.adapter.requests.single;
+      expect(request.path, '/api/v1/tasks');
+      expect(request.queryParameters['page'], 0);
+      expect(request.queryParameters['size'], 50);
+      expect(request.queryParameters['projectId'], 9);
+      expect(request.queryParameters['status'], contains('IN_PROGRESS'));
+      expect(request.queryParameters['status'], isNot(contains('DONE')));
+    },
+  );
 
   test('fetchTask loads a single task by id', () async {
     final built = build((options, call) => jsonResponseBody(taskJson));

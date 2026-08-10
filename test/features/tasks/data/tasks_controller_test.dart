@@ -68,9 +68,8 @@ void main() {
           required int size,
           int? projectId,
           required List<TaskStatus> statuses,
-        }) async => Result.success(
-          _page(0, [_task(1)], totalCount: 1, hasNext: false),
-        );
+        }) async =>
+            Result.success(_page(0, [_task(1)], totalCount: 1, hasNext: false));
     keepListAlive(built.container);
 
     final state = await built.container.read(listProvider.future);
@@ -81,40 +80,43 @@ void main() {
     expect(built.repo.lastProjectId, 99);
   });
 
-  test('loadNextPage appends the next bounded page without duplicates', () async {
-    final built = build();
-    built.repo.fetchTasksHandler =
-        ({
-          required int page,
-          required int size,
-          int? projectId,
-          required List<TaskStatus> statuses,
-        }) async {
-          if (page == 0) {
+  test(
+    'loadNextPage appends the next bounded page without duplicates',
+    () async {
+      final built = build();
+      built.repo.fetchTasksHandler =
+          ({
+            required int page,
+            required int size,
+            int? projectId,
+            required List<TaskStatus> statuses,
+          }) async {
+            if (page == 0) {
+              return Result.success(
+                _page(0, [_task(1), _task(2)], totalCount: 3, hasNext: true),
+              );
+            }
             return Result.success(
-              _page(0, [_task(1), _task(2)], totalCount: 3, hasNext: true),
+              _page(
+                1,
+                [_task(2, title: 'Updated Task 2'), _task(3)],
+                totalCount: 3,
+                hasNext: false,
+              ),
             );
-          }
-          return Result.success(
-            _page(
-              1,
-              [_task(2, title: 'Updated Task 2'), _task(3)],
-              totalCount: 3,
-              hasNext: false,
-            ),
-          );
-        };
-    keepListAlive(built.container);
-    await built.container.read(listProvider.future);
+          };
+      keepListAlive(built.container);
+      await built.container.read(listProvider.future);
 
-    await built.container.read(listProvider.notifier).loadNextPage();
+      await built.container.read(listProvider.notifier).loadNextPage();
 
-    final state = built.container.read(listProvider).value!;
-    expect(state.tasks.map((task) => task.id), [1, 2, 3]);
-    expect(state.tasks[1].title, 'Updated Task 2');
-    expect(state.hasNext, isFalse);
-    expect(built.repo.lastPage, 1);
-  });
+      final state = built.container.read(listProvider).value!;
+      expect(state.tasks.map((task) => task.id), [1, 2, 3]);
+      expect(state.tasks[1].title, 'Updated Task 2');
+      expect(state.hasNext, isFalse);
+      expect(built.repo.lastPage, 1);
+    },
+  );
 
   test('load-more failure keeps loaded tasks visible and retryable', () async {
     final built = build();
@@ -168,15 +170,17 @@ void main() {
       built.container.read(listProvider.future),
       throwsA(isA<OfflineFailure>()),
     );
-    expect(built.container.read(listProvider), isA<AsyncError<TaskListState>>());
+    expect(
+      built.container.read(listProvider),
+      isA<AsyncError<TaskListState>>(),
+    );
   });
 
   test('task detail loads and refreshes the requested id', () async {
     final built = build();
     var title = 'Before';
-    built.repo.fetchTaskHandler = (id) async => Result.success(
-      _task(id, title: title),
-    );
+    built.repo.fetchTaskHandler = (id) async =>
+        Result.success(_task(id, title: title));
     final provider = taskDetailControllerProvider((userId: 7, taskId: 42));
     final subscription = built.container.listen(provider, (previous, next) {});
     addTearDown(subscription.close);

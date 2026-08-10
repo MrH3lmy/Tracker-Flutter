@@ -76,7 +76,9 @@ void main() {
     return authApi;
   }
 
-  testWidgets('shows Projects, Board, Tasks, and the app title', (tester) async {
+  testWidgets('shows Projects, Board, Tasks, and the app title', (
+    tester,
+  ) async {
     await pumpSignedIn(tester);
 
     expect(find.text('Tracker'), findsOneWidget);
