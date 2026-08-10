@@ -61,7 +61,8 @@ class TaskWriteController extends Notifier<TaskWriteState> {
 
     final detailKey = (userId: userId, taskId: taskId);
     final existing = ref.read(taskDetailControllerProvider(detailKey)).value;
-    final safeInput = input.boardColumnId == null
+    final statusChanged = existing != null && existing.status != input.status;
+    final safeInput = input.boardColumnId == null && !statusChanged
         ? input.withBoardColumnId(existing?.boardColumnId)
         : input;
 
