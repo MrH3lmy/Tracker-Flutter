@@ -292,8 +292,9 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
             validator: (value) {
               final trimmed = value?.trim() ?? '';
               if (trimmed.isEmpty) return 'Title is required';
-              if (trimmed.length > 255)
+              if (trimmed.length > 255) {
                 return 'Title must be at most 255 characters';
+              }
               return null;
             },
           ),
