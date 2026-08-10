@@ -4,13 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker_flutter/core/result/result.dart';
 import 'package:tracker_flutter/features/tasks/data/task_write_controller.dart';
+import 'package:tracker_flutter/features/tasks/data/tasks_controller.dart';
 import 'package:tracker_flutter/features/tasks/data/tasks_repository.dart';
 import 'package:tracker_flutter/features/tasks/domain/task.dart';
 import 'package:tracker_flutter/features/tasks/domain/task_write_input.dart';
 
 import '../../../helpers/fake_tasks_repository.dart';
 
-Task _task(int id) => Task.fromJson({
+Task _task(int id, {int? boardColumnId}) => Task.fromJson({
   'id': id,
   'title': 'Created task',
   'description': null,
@@ -24,6 +25,7 @@ Task _task(int id) => Task.fromJson({
   'overdue': false,
   'urgent': false,
   'priorityScore': 0,
+  'boardColumnId': boardColumnId,
   'position': 1000,
 });
 
@@ -69,4 +71,45 @@ void main() {
       expect(container.read(taskWriteControllerProvider).isSubmitting, isFalse);
     },
   );
+
+  test('update carries cached board column into a form payload that omits it', () async {
+    final repository = FakeTasksRepository()
+      ..fetchTaskHandler = (id) async => Result.success(
+        _task(id, boardColumnId: 4),
+      )
+      ..updateTaskHandler = (id, input) async => Result.success(
+        _task(id, boardColumnId: input.boardColumnId),
+      );
+    final container = ProviderContainer(
+      overrides: [tasksRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    const detailKey = (userId: 1, taskId: 10);
+    final detailProvider = taskDetailControllerProvider(detailKey);
+    final detailSubscription = container.listen(
+      detailProvider,
+      (previous, next) {},
+    );
+    addTearDown(detailSubscription.close);
+    await container.read(detailProvider.future);
+
+    final writeSubscription = container.listen(
+      taskWriteControllerProvider,
+      (previous, next) {},
+    );
+    addTearDown(writeSubscription.close);
+
+    final updated = await container
+        .read(taskWriteControllerProvider.notifier)
+        .update(
+          userId: 1,
+          taskId: 10,
+          projectId: null,
+          input: TaskWriteInput.defaults(),
+        );
+
+    expect(updated!.boardColumnId, 4);
+    expect(repository.lastWriteInput!.boardColumnId, 4);
+  });
 }
