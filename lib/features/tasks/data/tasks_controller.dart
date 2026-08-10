@@ -86,7 +86,9 @@ class TaskListController extends AsyncNotifier<TaskListState> {
 
     result.when(
       success: (page) {
-        final byId = <int, Task>{for (final task in current.tasks) task.id: task};
+        final byId = <int, Task>{
+          for (final task in current.tasks) task.id: task,
+        };
         for (final task in page.items) {
           byId[task.id] = task;
         }
@@ -122,14 +124,19 @@ class TaskDetailController extends AsyncNotifier<Task> {
   final TaskDetailKey key;
 
   @override
-  Future<Task> build() async {
-    final result = await ref.watch(tasksRepositoryProvider).fetchTask(key.taskId);
-    return result.when(success: (task) => task, failure: (failure) => throw failure);
+  Future<Task> build() => _load();
+
+  Future<Task> _load() async {
+    final result = await ref.read(tasksRepositoryProvider).fetchTask(key.taskId);
+    return result.when(
+      success: (task) => task,
+      failure: (failure) => throw failure,
+    );
   }
 
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    state = await AsyncValue.guard(build);
+    state = await AsyncValue.guard(_load);
   }
 }
 
