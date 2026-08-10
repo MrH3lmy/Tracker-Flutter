@@ -53,7 +53,9 @@ void main() {
       routes: [
         GoRoute(
           path: '/tasks/new',
-          builder: (context, state) => const TaskCreateScreen(projectId: 55),
+          builder: (context, state) => const Scaffold(
+            body: TaskCreateScreen(projectId: 55),
+          ),
         ),
         GoRoute(
           path: '/tasks/:id',
