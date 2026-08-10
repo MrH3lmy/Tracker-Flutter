@@ -40,24 +40,20 @@ void main() {
           ),
           clientPlatformProvider.overrideWithValue(ClientPlatform.android),
         ],
-        // AppShell needs a real GoRouterState (it computes selectedIndex
-        // from the matched location) and a GoRouter ancestor for
-        // onDestinationSelected's context.go to work, so this pumps it
-        // through a minimal router the same way production's ShellRoute
-        // does rather than constructing GoRouterState by hand.
         child: MaterialApp.router(
           routerConfig: GoRouter(
             initialLocation: '/',
             routes: [
-              GoRoute(
-                path: '/',
-                builder: (context, state) => AppShell(
-                  routerState: state,
-                  child: const SizedBox.shrink(),
+              for (final path in ['/', '/board', '/tasks'])
+                GoRoute(
+                  path: path,
+                  builder: (context, state) => AppShell(
+                    routerState: state,
+                    child: const SizedBox.shrink(),
+                  ),
                 ),
-              ),
               GoRoute(
-                path: '/board',
+                path: '/tasks/:id',
                 builder: (context, state) => AppShell(
                   routerState: state,
                   child: const SizedBox.shrink(),
@@ -80,7 +76,7 @@ void main() {
     return authApi;
   }
 
-  testWidgets('shows the Projects and Board destinations and the app title', (
+  testWidgets('shows Projects, Board, Tasks, and the app title', (
     tester,
   ) async {
     await pumpSignedIn(tester);
@@ -88,6 +84,7 @@ void main() {
     expect(find.text('Tracker'), findsOneWidget);
     expect(find.text('Projects'), findsOneWidget);
     expect(find.text('Board'), findsOneWidget);
+    expect(find.text('Tasks'), findsOneWidget);
   });
 
   testWidgets('tapping the Board destination navigates to /board', (
@@ -95,18 +92,34 @@ void main() {
   ) async {
     await pumpSignedIn(tester);
 
-    // Tapped by icon, not by the "Board" label text: at this test surface's
-    // default (medium) width, AdaptiveScaffold's NavigationRail only shows
-    // a label under the *selected* destination, so the unselected "Board"
-    // label exists in the tree but isn't the widget that receives the tap.
     await tester.tap(find.byIcon(Icons.view_column_outlined));
     await tester.pumpAndSettle();
 
-    // No app-level routerProvider is wired up in this focused shell test
-    // (unlike app_router_redirect_test.dart), so assert against the
-    // GoRouter instance AppShell actually navigated through instead.
     final goRouter = GoRouter.of(tester.element(find.byType(AppShell)));
     expect(goRouter.state.matchedLocation, '/board');
+  });
+
+  testWidgets('tapping the Tasks destination navigates to /tasks', (
+    tester,
+  ) async {
+    await pumpSignedIn(tester);
+
+    await tester.tap(find.byIcon(Icons.checklist_outlined));
+    await tester.pumpAndSettle();
+
+    final goRouter = GoRouter.of(tester.element(find.byType(AppShell)));
+    expect(goRouter.state.matchedLocation, '/tasks');
+  });
+
+  testWidgets('task detail routes keep Tasks selected', (tester) async {
+    await pumpSignedIn(tester);
+
+    final goRouter = GoRouter.of(tester.element(find.byType(AppShell)));
+    goRouter.go('/tasks/42');
+    await tester.pumpAndSettle();
+
+    expect(goRouter.state.matchedLocation, '/tasks/42');
+    expect(find.byIcon(Icons.checklist), findsOneWidget);
   });
 
   testWidgets('the account menu shows the signed-in user\'s email', (

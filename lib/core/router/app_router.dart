@@ -9,6 +9,8 @@ import '../../features/board_columns/presentation/board_screen.dart';
 import '../../features/not_found/presentation/not_found_screen.dart';
 import '../../features/projects/presentation/projects_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
+import '../../features/tasks/presentation/task_detail_screen.dart';
+import '../../features/tasks/presentation/tasks_screen.dart';
 import 'session_status.dart';
 
 class AppRoutes {
@@ -19,6 +21,10 @@ class AppRoutes {
   static const register = '/register';
   static const home = '/';
   static const board = '/board';
+  static const tasks = '/tasks';
+  static const taskDetailPattern = '/tasks/:id';
+
+  static String taskDetail(int id) => '/tasks/$id';
 }
 
 /// A stable router instance whose redirect logic is refreshed when session
@@ -72,6 +78,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: AppRoutes.board,
             builder: (context, state) => const BoardScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.tasks,
+            builder: (context, state) => const TasksScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.taskDetailPattern,
+            builder: (context, state) {
+              final taskId = int.tryParse(state.pathParameters['id'] ?? '');
+              if (taskId == null) {
+                return const NotFoundScreen(message: 'Invalid task id.');
+              }
+              return TaskDetailScreen(taskId: taskId);
+            },
           ),
         ],
       ),
