@@ -14,8 +14,9 @@ This repository currently contains:
 - **The first functional release** ([#4][epic4], in progress — shipped as a sequence of vertical slices, not one PR):
   - Slice 1: the authenticated shell and a Projects list (load, select, refresh, safe selection state). See [Projects](#projects) below.
   - Slice 2: the user's global board-column layout (load, refresh). See [Board columns](#board-columns) below — note this is **not** project-scoped; see that section for why.
+  - Slice 3: bounded active-task pagination plus task details, optionally filtered by the selected project. See [Tasks](#tasks) below.
 
-It intentionally does not yet include tasks, notes, attachments, or settings — those are later slices of the same epic.
+It intentionally does not yet include task creation/editing, task lifecycle/archive actions, notes, attachments, or settings — those are later slices of the same epic.
 
 [epic1]: https://github.com/MrH3lmy/Tracker-Flutter/issues/1
 [epic2]: https://github.com/MrH3lmy/Tracker-Flutter/issues/2
@@ -76,6 +77,7 @@ lib/
     shell/         # authenticated app shell (adaptive navigation chrome)
     projects/      # project list + selection — see Projects below
     board_columns/ # the user's global Kanban layout — see Board columns below
+    tasks/         # paginated active tasks + task details — see Tasks below
     not_found/     # unknown-route screen
   src/app.dart     # MaterialApp.router wiring theme + router together
   bootstrap.dart   # shared startup: error handling, logging init, ProviderScope
@@ -96,7 +98,7 @@ lib/
 
 - `interceptors/auth_header_interceptor.dart` injects the bearer token from `AuthSession` unless a request opts out with `RequestPolicy(skipAuth: true)`.
 - `interceptors/refresh_interceptor.dart` coalesces concurrent `401`s into one `AuthSession.refreshAccessToken()` call, replays the waiting requests exactly once each, and calls `forceSignOut()` when refresh can't recover the session. See its doc comment for the concurrency/loop-prevention argument.
-- `interceptors/retry_interceptor.dart` retries only timeouts/`5xx`/`429`, and only when the request is idempotent (GET/HEAD by default) or explicitly marked `RequestPolicy(retryable: true)` — a flaky network can't turn one write into two.
+- `interceptors/retry_interceptor.dart` retries only timeouts/`5xx`/`429`, and only when a request is idempotent (GET/HEAD by default) or explicitly marked retryable via `RequestPolicy` — a flaky network can't turn one write into two.
 - `interceptors/redacting_log_interceptor.dart` logs through `AppLogger`; bodies are only logged outside production, and `FormData` is always summarized by field name, never by content.
 - `pagination/page_meta.dart` parses Tracker-BE's `X-Total-Count` / `X-Total-Pages` / `X-Page` / `X-Page-Size` / `X-Has-Next` headers into `PageMeta`; `ApiClient.getPaginated` returns a `PaginatedResult<T>` — there is no "load everything" path.
 - `connectivity/connectivity_service.dart` reports network *presence*, not reachability; `ApiClient` uses it only to tell `OfflineFailure` (no interface at all) apart from `NetworkFailure` (an interface is up but the server didn't respond).
@@ -140,17 +142,31 @@ The endpoint is not paginated and Tracker-BE already orders the response by `pos
 - `domain/board_column.dart` — `BoardColumn` mirrors `BoardColumnResponse` field-for-field (`id`, `name`, `status`, `position`) — no `boardId`, on purpose. `ColumnStatus` parsing degrades to `ColumnStatus.unknown` for a status value this build doesn't recognize yet, same forward-compatibility approach as `ProjectStatus`.
 - `data/board_columns_repository.dart` — `BoardColumnsRepository` wraps `ApiClient`; re-asserts the backend's `position` ordering defensively rather than trusting wire order to survive unchanged, but invents no ordering of its own.
 - `data/board_columns_controller.dart` — `BoardColumnsController` (`AsyncNotifier<List<BoardColumn>>.family.autoDispose`, keyed by user id) mirrors `ProjectsController`'s pattern exactly: retry disabled for the same reason, `refresh()` keeps the previous list visible while re-fetching, and guards against an older in-flight `refresh()` clobbering a newer one. `.autoDispose` plus the user-id key means one account's cached column list can never leak to another after logout/account switch — a new user id is a different provider instance, and the old one is disposed once nothing references it.
-- `presentation/board_screen.dart` — a horizontally-scrolling Kanban layout (one card per column) inside a pull-to-refresh `RefreshIndicator`, with loading/empty/offline/unauthorized/error/retry via the shared `AsyncStateView`. Task cards are not implemented yet — each column shows an explicit placeholder; wiring the selected project's tasks into these same global columns (grouped by `boardColumnId`, filtered by `projectId`) is the next slice.
+- `presentation/board_screen.dart` — a horizontally-scrolling Kanban layout (one card per column) inside a pull-to-refresh `RefreshIndicator`, with loading/empty/offline/unauthorized/error/retry via the shared `AsyncStateView`. Task cards are intentionally still a placeholder: composing the independent `board_columns` and `tasks` features should happen through an explicit composition boundary rather than making either feature import the other.
 
 Selecting a different project elsewhere in the app has **no effect** on this screen — `BoardScreen` never reads `selectedProjectControllerProvider` — which is asserted directly in both `board_screen_test.dart` and `test/integration/app_flow_test.dart`.
+
+## Tasks
+
+`features/tasks/` is epic #4's third vertical slice: bounded active-task browsing and task details against Tracker-BE's paginated `GET /api/v1/tasks` and `GET /api/v1/tasks/{id}` contracts.
+
+Tracker-BE returns task pages as a plain JSON array and places page metadata in `X-Total-Count`, `X-Total-Pages`, `X-Page`, `X-Page-Size`, and `X-Has-Next`. The backend caps page size and applies a deterministic `(position, id)` ordering. This client deliberately uses `ApiClient.getPaginated`; there is no task-specific "load everything" compatibility path.
+
+- `domain/task.dart` — `Task` mirrors the backend `TaskResponse` used by both list and detail endpoints, including scheduling, priority, hierarchy, dependency/subtask, and recurrence metadata. Enum parsing degrades to explicit unknown cases where appropriate so one newly introduced backend enum does not make the whole task unreadable.
+- `data/tasks_repository.dart` — `TasksRepository` requests one bounded page at a time. The first-release task list sends only active statuses (`BACKLOG`, `NOT_STARTED`, `IN_PROGRESS`, `WAITING`, `BLOCKED`), leaving `DONE`/`CANCELLED` for the later archive/lifecycle slice. When a project is selected, `projectId` is sent to the backend rather than filtering an already-downloaded global list on the device.
+- `data/tasks_controller.dart` — `TaskListController` is keyed by `(userId, projectId)`, loads 50 tasks per page, supports pull-to-refresh plus explicit load-more, de-duplicates by task id across page boundaries, and keeps already loaded tasks visible when a later page fails. `TaskDetailController` loads and retries one task by id. Both disable Riverpod's automatic retry because transport failures are already classified and rendered explicitly.
+- `presentation/tasks_screen.dart` — shows all active tasks when no project is selected, or the selected project's active tasks when there is one. The UI always shows loaded-vs-total counts and an explicit load-more action when `X-Has-Next` is true, so a successful first page can never be mistaken for a complete list.
+- `presentation/task_detail_screen.dart` — renders the task itself without pulling notes, screenshots, or attachments into this slice; those belong to their later feature slices.
+
+The authenticated shell exposes `/tasks`, and `/tasks/:id` keeps the Tasks destination selected so navigating into a detail page does not lose orientation.
 
 ## Testing
 
 - `test/core/**` — unit tests for `Result`, `AppConfig`, `AppLogger` redaction, breakpoints, and the full networking layer (mapper, pagination parsing, request policy, connectivity classification, and each interceptor's behavior against a fake `HttpClientAdapter` — including concurrent-401 single-flight refresh and non-idempotent no-auto-retry).
-- `test/features/**` — per-feature unit/widget tests following the `data`/`domain`/`presentation` split (auth, projects, board_columns).
+- `test/features/**` — per-feature unit/widget tests following the `data`/`domain`/`presentation` split (auth, projects, board_columns, tasks).
 - `test/widget/**` — widget tests for `AdaptiveScaffold` and an app-level smoke test (launch → authenticated shell; unknown route → not-found screen).
-- `test/integration/app_flow_test.dart` — a widget-test-level run of the full launch → sign in → authenticated shell → load projects → select project → open Board → load board columns flow (plus an explicit assertion that changing the selected project doesn't reload or change the columns), with every provider and screen real except the network boundary (`AuthApi`/`ProjectsRepository`/`BoardColumnsRepository`), which is faked since no live Tracker-BE is reachable from a widget test.
-- `integration_test/app_test.dart` — true device/backend end-to-end launch smoke test; feature epics extend `test/integration/app_flow_test.dart` with their own flows (e.g. task list → task details) rather than replacing it.
+- `test/integration/app_flow_test.dart` — a widget-test-level run of launch → sign in → authenticated shell → load/select project → open Board/load global columns → open the selected project's bounded Tasks list → open task details, with every provider and screen real except the network repositories, which are faked because no live Tracker-BE is reachable from a widget test.
+- `integration_test/app_test.dart` — true device/backend end-to-end launch smoke test; feature epics continue extending the widget-level flow while device/backend coverage grows alongside release slices.
 
 ## Contributing
 
