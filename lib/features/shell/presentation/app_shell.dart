@@ -10,23 +10,18 @@ import '../../auth/data/auth_repository.dart';
 
 enum _AccountAction { signOut, signOutAll }
 
-/// Authenticated application shell.
-///
-/// Holds the single set of navigation destinations shared by every
-/// platform; the destination list grows as feature epics land (archive,
-/// settings, ...). Projects and the global Board view exist today (epic #4
-/// slices 1-2) — Board is intentionally not scoped to the selected project;
-/// see `BoardScreen`'s doc comment for why.
-///
-/// The account menu lives here rather than on individual screens so
-/// sign-out stays available regardless of which destination is active.
+/// Authenticated application shell shared by mobile, web, and desktop.
 class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.routerState, required this.child});
 
   final GoRouterState routerState;
   final Widget child;
 
-  static const _destinationPaths = [AppRoutes.home, AppRoutes.board];
+  static const _destinationPaths = [
+    AppRoutes.home,
+    AppRoutes.board,
+    AppRoutes.tasks,
+  ];
 
   static const destinations = [
     AdaptiveDestination(
@@ -39,16 +34,17 @@ class AppShell extends ConsumerWidget {
       selectedIcon: Icons.view_column,
       label: 'Board',
     ),
+    AdaptiveDestination(
+      icon: Icons.checklist_outlined,
+      selectedIcon: Icons.checklist,
+      label: 'Tasks',
+    ),
   ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authRepositoryProvider).userOrNull;
-    // -1 (no match, shouldn't happen for a route inside this shell) clamps
-    // to the first destination rather than crashing on a negative index.
-    final selectedIndex = _destinationPaths
-        .indexOf(routerState.matchedLocation)
-        .clamp(0, _destinationPaths.length - 1);
+    final selectedIndex = _selectedIndex(routerState.matchedLocation);
 
     return AdaptiveScaffold(
       appBar: AppBar(
@@ -92,5 +88,14 @@ class AppShell extends ConsumerWidget {
       onDestinationSelected: (index) => context.go(_destinationPaths[index]),
       body: child,
     );
+  }
+
+  static int _selectedIndex(String location) {
+    if (location == AppRoutes.board) return 1;
+    if (location == AppRoutes.tasks ||
+        location.startsWith('${AppRoutes.tasks}/')) {
+      return 2;
+    }
+    return 0;
   }
 }
