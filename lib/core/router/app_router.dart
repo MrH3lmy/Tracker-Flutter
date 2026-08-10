@@ -11,7 +11,7 @@ import '../../features/projects/presentation/projects_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
 import '../../features/shell/presentation/task_destinations.dart';
 import '../../features/tasks/presentation/task_detail_screen.dart';
-import '../../features/tasks/presentation/task_form_screen.dart';
+import '../../features/tasks/presentation/task_edit_screen.dart';
 import 'session_status.dart';
 
 class AppRoutes {
@@ -79,8 +79,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.tasks,
             builder: (context, state) => const TasksDestination(),
           ),
-          // Keep the static /new route before /:id so "new" is never parsed
-          // as a task id.
           GoRoute(
             path: AppRoutes.taskCreate,
             builder: (context, state) => const TaskCreateDestination(),
@@ -91,7 +89,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               final taskId = _taskId(state);
               return taskId == null
                   ? const NotFoundScreen(message: 'Invalid task id.')
-                  : TaskEditScreen(taskId: taskId);
+                  : SafeTaskEditScreen(taskId: taskId);
             },
           ),
           GoRoute(
