@@ -80,18 +80,11 @@ class TaskWriteInput {
   final DateTime? dueDate;
   final DateTime? startDate;
   final int? estimatedMinutes;
-
-  /// Not exposed in the first write form, but preserved on PUT so editing a
-  /// different field cannot silently erase already-recorded actual time.
   final int? actualMinutes;
   final TaskRiskLevel riskLevel;
   final String? riskReason;
   final String? track;
   final String? phase;
-
-  /// Parent/dependencies/recurrence/board placement editing are later
-  /// concerns. Their existing values are carried forward on PUT; dependencyIds
-  /// remains null so Tracker-BE keeps the current dependency set.
   final int? parentTaskId;
   final bool important;
   final TaskStatus status;
@@ -102,6 +95,29 @@ class TaskWriteInput {
   final DateTime? followUpDate;
   final TaskRecurrence? recurrence;
   final int? boardColumnId;
+
+  TaskWriteInput withBoardColumnId(int? value) => TaskWriteInput(
+    title: title,
+    description: description,
+    dueDate: dueDate,
+    startDate: startDate,
+    estimatedMinutes: estimatedMinutes,
+    actualMinutes: actualMinutes,
+    riskLevel: riskLevel,
+    riskReason: riskReason,
+    track: track,
+    phase: phase,
+    parentTaskId: parentTaskId,
+    important: important,
+    status: status,
+    area: area,
+    effort: effort,
+    blockedReason: blockedReason,
+    waitingOn: waitingOn,
+    followUpDate: followUpDate,
+    recurrence: recurrence,
+    boardColumnId: value,
+  );
 
   Map<String, dynamic> toRequestJson() => {
     'title': title.trim(),
