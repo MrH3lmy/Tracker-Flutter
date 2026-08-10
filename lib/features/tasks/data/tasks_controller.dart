@@ -140,6 +140,11 @@ class TaskDetailController extends AsyncNotifier<Task> {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(_load);
   }
+
+  void replace(Task task) {
+    if (task.id != key.taskId) return;
+    state = AsyncValue.data(task);
+  }
 }
 
 final taskDetailControllerProvider = AsyncNotifierProvider.family
