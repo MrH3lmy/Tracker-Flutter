@@ -19,9 +19,11 @@ dependencies:
   # Routing
   go_router: ^17.4.0
 
-  # Networking (client foundation only — the full interceptor/auth/pagination
-  # stack is built out under the networking-layer epic)
+  # Networking
   dio: ^5.11.0
+
+  # Cross-platform image/file selection for note screenshot attachments.
+  file_picker: ^11.0.2
 
   # OS-backed secure storage for native refresh credentials (Keychain /
   # Keystore / Credential Manager / Secret Service) — never used on Web,
