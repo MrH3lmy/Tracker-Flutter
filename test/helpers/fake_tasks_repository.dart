@@ -14,6 +14,8 @@ typedef FetchTasksHandler =
 
 class FakeTasksRepository implements TasksRepository {
   FetchTasksHandler? fetchTasksHandler;
+  Future<Result<PaginatedResult<Task>>> Function(int page, int size)?
+  fetchArchiveHandler;
   Future<Result<Task>> Function(int id)? fetchTaskHandler;
   Future<Result<TaskCreateOutcome>> Function(
     TaskWriteInput input,
@@ -22,14 +24,21 @@ class FakeTasksRepository implements TasksRepository {
   createTaskHandler;
   Future<Result<Task>> Function(int id, TaskWriteInput input)?
   updateTaskHandler;
+  Future<Result<Task>> Function(int id)? completeTaskHandler;
+  Future<Result<Task>> Function(int id, TaskStatus status)?
+  updateTaskStatusHandler;
 
   int fetchTasksCalls = 0;
+  int fetchArchiveCalls = 0;
   int fetchTaskCalls = 0;
   int createTaskCalls = 0;
   int updateTaskCalls = 0;
+  int completeTaskCalls = 0;
+  int updateTaskStatusCalls = 0;
   int? lastProjectId;
   int? lastPage;
   int? lastSize;
+  TaskStatus? lastStatus;
   TaskWriteInput? lastWriteInput;
 
   @override
@@ -49,6 +58,17 @@ class FakeTasksRepository implements TasksRepository {
       projectId: projectId,
       statuses: statuses,
     );
+  }
+
+  @override
+  Future<Result<PaginatedResult<Task>>> fetchArchive({
+    required int page,
+    required int size,
+  }) {
+    fetchArchiveCalls++;
+    lastPage = page;
+    lastSize = size;
+    return fetchArchiveHandler!(page, size);
   }
 
   @override
@@ -73,5 +93,18 @@ class FakeTasksRepository implements TasksRepository {
     updateTaskCalls++;
     lastWriteInput = input;
     return updateTaskHandler!(id, input);
+  }
+
+  @override
+  Future<Result<Task>> completeTask(int id) {
+    completeTaskCalls++;
+    return completeTaskHandler!(id);
+  }
+
+  @override
+  Future<Result<Task>> updateTaskStatus(int id, TaskStatus status) {
+    updateTaskStatusCalls++;
+    lastStatus = status;
+    return updateTaskStatusHandler!(id, status);
   }
 }

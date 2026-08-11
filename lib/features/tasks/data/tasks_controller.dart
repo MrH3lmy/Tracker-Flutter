@@ -118,6 +118,93 @@ final taskListControllerProvider = AsyncNotifierProvider.family
       retry: (retryCount, error) => null,
     );
 
+class TaskArchiveController extends AsyncNotifier<TaskListState> {
+  TaskArchiveController(this.userId);
+
+  static const pageSize = 50;
+
+  final int userId;
+  int _requestId = 0;
+
+  @override
+  Future<TaskListState> build() => _loadFirstPage();
+
+  Future<TaskListState> _loadFirstPage() async {
+    final result = await ref
+        .watch(tasksRepositoryProvider)
+        .fetchArchive(page: 0, size: pageSize);
+    return result.when(
+      success: (page) => TaskListState(
+        tasks: List<Task>.unmodifiable(page.items),
+        meta: page.meta,
+      ),
+      failure: (failure) => throw failure,
+    );
+  }
+
+  Future<void> refresh() async {
+    final requestId = ++_requestId;
+    if (!state.hasValue) {
+      state = const AsyncValue.loading();
+    }
+    final result = await AsyncValue.guard(_loadFirstPage);
+    if (requestId == _requestId) {
+      state = result;
+    }
+  }
+
+  Future<void> loadNextPage() async {
+    final current = state.value;
+    if (current == null || !current.hasNext || current.isLoadingMore) return;
+
+    final requestId = ++_requestId;
+    state = AsyncValue.data(
+      TaskListState(
+        tasks: current.tasks,
+        meta: current.meta,
+        isLoadingMore: true,
+      ),
+    );
+
+    final result = await ref
+        .read(tasksRepositoryProvider)
+        .fetchArchive(page: current.meta.page + 1, size: pageSize);
+    if (requestId != _requestId) return;
+
+    result.when(
+      success: (page) {
+        final byId = <int, Task>{
+          for (final task in current.tasks) task.id: task,
+        };
+        for (final task in page.items) {
+          byId[task.id] = task;
+        }
+        state = AsyncValue.data(
+          TaskListState(
+            tasks: List<Task>.unmodifiable(byId.values),
+            meta: page.meta,
+          ),
+        );
+      },
+      failure: (failure) {
+        state = AsyncValue.data(
+          TaskListState(
+            tasks: current.tasks,
+            meta: current.meta,
+            loadMoreFailure: failure,
+          ),
+        );
+      },
+    );
+  }
+}
+
+final taskArchiveControllerProvider = AsyncNotifierProvider.family
+    .autoDispose<TaskArchiveController, TaskListState, int>(
+      TaskArchiveController.new,
+      retry: (retryCount, error) => null,
+    );
+
 class TaskDetailController extends AsyncNotifier<Task> {
   TaskDetailController(this.key);
 

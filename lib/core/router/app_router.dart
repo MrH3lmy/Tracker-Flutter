@@ -10,8 +10,9 @@ import '../../features/not_found/presentation/not_found_screen.dart';
 import '../../features/projects/presentation/projects_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
 import '../../features/shell/presentation/task_destinations.dart';
-import '../../features/tasks/presentation/task_detail_screen.dart';
+import '../../features/tasks/presentation/task_archive_screen.dart';
 import '../../features/tasks/presentation/task_edit_screen.dart';
+import '../../features/tasks/presentation/task_lifecycle_detail_screen.dart';
 import 'session_status.dart';
 
 class AppRoutes {
@@ -23,6 +24,7 @@ class AppRoutes {
   static const home = '/';
   static const board = '/board';
   static const tasks = '/tasks';
+  static const taskArchive = '/tasks/archive';
   static const taskCreate = '/tasks/new';
   static const taskDetailPattern = '/tasks/:id';
   static const taskEditPattern = '/tasks/:id/edit';
@@ -80,6 +82,10 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const TasksDestination(),
           ),
           GoRoute(
+            path: AppRoutes.taskArchive,
+            builder: (context, state) => const TaskArchiveScreen(),
+          ),
+          GoRoute(
             path: AppRoutes.taskCreate,
             builder: (context, state) => const TaskCreateDestination(),
           ),
@@ -98,7 +104,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               final taskId = _taskId(state);
               return taskId == null
                   ? const NotFoundScreen(message: 'Invalid task id.')
-                  : TaskDetailScreen(taskId: taskId);
+                  : TaskLifecycleDetailScreen(taskId: taskId);
             },
           ),
         ],

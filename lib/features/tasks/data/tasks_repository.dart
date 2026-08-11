@@ -31,6 +31,11 @@ abstract interface class TasksRepository {
     List<TaskStatus> statuses = activeTaskStatuses,
   });
 
+  Future<Result<PaginatedResult<Task>>> fetchArchive({
+    required int page,
+    required int size,
+  });
+
   Future<Result<Task>> fetchTask(int id);
 
   Future<Result<TaskCreateOutcome>> createTask(
@@ -39,6 +44,10 @@ abstract interface class TasksRepository {
   });
 
   Future<Result<Task>> updateTask(int id, TaskWriteInput input);
+
+  Future<Result<Task>> completeTask(int id);
+
+  Future<Result<Task>> updateTaskStatus(int id, TaskStatus status);
 }
 
 class ApiTasksRepository implements TasksRepository {
@@ -62,6 +71,18 @@ class ApiTasksRepository implements TasksRepository {
         if (statuses.isNotEmpty)
           'status': statuses.map(taskStatusApiValue).toList(growable: false),
       },
+      decodeItem: (item) => Task.fromJson(item as Map<String, dynamic>),
+    );
+  }
+
+  @override
+  Future<Result<PaginatedResult<Task>>> fetchArchive({
+    required int page,
+    required int size,
+  }) {
+    return _client.getPaginated<Task>(
+      '/api/v1/tasks/archive',
+      queryParameters: {'page': page, 'size': size},
       decodeItem: (item) => Task.fromJson(item as Map<String, dynamic>),
     );
   }
@@ -118,6 +139,23 @@ class ApiTasksRepository implements TasksRepository {
     return _client.put<Task>(
       '/api/v1/tasks/$id',
       data: input.toRequestJson(),
+      decode: _decodeTask,
+    );
+  }
+
+  @override
+  Future<Result<Task>> completeTask(int id) {
+    return _client.patch<Task>(
+      '/api/v1/tasks/$id/complete',
+      decode: _decodeTask,
+    );
+  }
+
+  @override
+  Future<Result<Task>> updateTaskStatus(int id, TaskStatus status) {
+    return _client.patch<Task>(
+      '/api/v1/tasks/$id/status',
+      queryParameters: {'status': taskStatusApiValue(status)},
       decode: _decodeTask,
     );
   }
