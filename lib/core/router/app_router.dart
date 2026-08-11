@@ -7,6 +7,7 @@ import '../../features/auth/presentation/sign_in_screen.dart';
 import '../../features/auth/presentation/splash_screen.dart';
 import '../../features/board_columns/presentation/board_screen.dart';
 import '../../features/not_found/presentation/not_found_screen.dart';
+import '../../features/notes/presentation/notes_screen.dart';
 import '../../features/projects/presentation/projects_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
 import '../../features/shell/presentation/task_destinations.dart';
@@ -28,6 +29,10 @@ class AppRoutes {
   static const taskCreate = '/tasks/new';
   static const taskDetailPattern = '/tasks/:id';
   static const taskEditPattern = '/tasks/:id/edit';
+  static const notes = '/notes';
+  static const noteCreate = '/notes/new';
+  static const noteDetailPattern = '/notes/:id';
+  static const noteEditPattern = '/notes/:id/edit';
 
   static String taskDetail(int id) => '/tasks/$id';
   static String taskEdit(int id) => '/tasks/$id/edit';
@@ -41,94 +46,81 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final status = ref.read(sessionStatusProvider);
       final path = state.matchedLocation;
-      final onAuthRoute =
-          path == AppRoutes.signIn || path == AppRoutes.register;
+      final onAuthRoute = path == AppRoutes.signIn || path == AppRoutes.register;
       final onSplash = path == AppRoutes.splash;
-
       return switch (status) {
         SessionStatus.unknown => onSplash ? null : AppRoutes.splash,
         SessionStatus.unauthenticated => onAuthRoute ? null : AppRoutes.signIn,
-        SessionStatus.authenticated =>
-          (onAuthRoute || onSplash) ? AppRoutes.home : null,
+        SessionStatus.authenticated => (onAuthRoute || onSplash) ? AppRoutes.home : null,
       };
     },
     routes: [
-      GoRoute(
-        path: AppRoutes.splash,
-        builder: (context, state) => const SplashScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.signIn,
-        builder: (context, state) => const SignInScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.register,
-        builder: (context, state) => const RegisterScreen(),
-      ),
+      GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashScreen()),
+      GoRoute(path: AppRoutes.signIn, builder: (_, _) => const SignInScreen()),
+      GoRoute(path: AppRoutes.register, builder: (_, _) => const RegisterScreen()),
       ShellRoute(
-        builder: (context, state, child) =>
-            AppShell(routerState: state, child: child),
+        builder: (context, state, child) => AppShell(routerState: state, child: child),
         routes: [
-          GoRoute(
-            path: AppRoutes.home,
-            builder: (context, state) => const ProjectsScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.board,
-            builder: (context, state) => const BoardScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.tasks,
-            builder: (context, state) => const TasksDestination(),
-          ),
-          GoRoute(
-            path: AppRoutes.taskArchive,
-            builder: (context, state) => const TaskArchiveScreen(),
-          ),
-          GoRoute(
-            path: AppRoutes.taskCreate,
-            builder: (context, state) => const TaskCreateDestination(),
-          ),
+          GoRoute(path: AppRoutes.home, builder: (_, _) => const ProjectsScreen()),
+          GoRoute(path: AppRoutes.board, builder: (_, _) => const BoardScreen()),
+          GoRoute(path: AppRoutes.tasks, builder: (_, _) => const TasksDestination()),
+          GoRoute(path: AppRoutes.taskArchive, builder: (_, _) => const TaskArchiveScreen()),
+          GoRoute(path: AppRoutes.taskCreate, builder: (_, _) => const TaskCreateDestination()),
           GoRoute(
             path: AppRoutes.taskEditPattern,
-            builder: (context, state) {
-              final taskId = _taskId(state);
-              return taskId == null
+            builder: (_, state) {
+              final id = _id(state);
+              return id == null
                   ? const NotFoundScreen(message: 'Invalid task id.')
-                  : SafeTaskEditScreen(taskId: taskId);
+                  : SafeTaskEditScreen(taskId: id);
             },
           ),
           GoRoute(
             path: AppRoutes.taskDetailPattern,
-            builder: (context, state) {
-              final taskId = _taskId(state);
-              return taskId == null
+            builder: (_, state) {
+              final id = _id(state);
+              return id == null
                   ? const NotFoundScreen(message: 'Invalid task id.')
-                  : TaskLifecycleDetailScreen(taskId: taskId);
+                  : TaskLifecycleDetailScreen(taskId: id);
+            },
+          ),
+          GoRoute(path: AppRoutes.notes, builder: (_, _) => const NotesScreen()),
+          GoRoute(path: AppRoutes.noteCreate, builder: (_, _) => const NoteFormScreen()),
+          GoRoute(
+            path: AppRoutes.noteEditPattern,
+            builder: (_, state) {
+              final id = _id(state);
+              return id == null
+                  ? const NotFoundScreen(message: 'Invalid note id.')
+                  : NoteFormScreen(noteId: id);
+            },
+          ),
+          GoRoute(
+            path: AppRoutes.noteDetailPattern,
+            builder: (_, state) {
+              final id = _id(state);
+              return id == null
+                  ? const NotFoundScreen(message: 'Invalid note id.')
+                  : NoteDetailScreen(noteId: id);
             },
           ),
         ],
       ),
     ],
-    errorBuilder: (context, state) =>
-        NotFoundScreen(message: "No page matches '${state.uri}'."),
+    errorBuilder: (_, state) => NotFoundScreen(message: "No page matches '${state.uri}'."),
   );
 
   ref.onDispose(() {
     router.dispose();
     refreshNotifier.dispose();
   });
-
   return router;
 });
 
-int? _taskId(GoRouterState state) =>
-    int.tryParse(state.pathParameters['id'] ?? '');
+int? _id(GoRouterState state) => int.tryParse(state.pathParameters['id'] ?? '');
 
 class _RouterRefreshNotifier extends ChangeNotifier {
   _RouterRefreshNotifier(Ref ref) {
-    ref.listen<SessionStatus>(sessionStatusProvider, (previous, next) {
-      notifyListeners();
-    });
+    ref.listen<SessionStatus>(sessionStatusProvider, (previous, next) => notifyListeners());
   }
 }
