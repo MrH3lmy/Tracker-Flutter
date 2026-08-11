@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../projects/data/selected_project_controller.dart';
@@ -19,6 +19,10 @@ class TaskCreateDestination extends ConsumerWidget {
   const TaskCreateDestination({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) =>
-      TaskCreateScreen(projectId: ref.watch(selectedProjectControllerProvider));
+  Widget build(BuildContext context, WidgetRef ref) => Material(
+    color: Colors.transparent,
+    child: TaskCreateScreen(
+      projectId: ref.watch(selectedProjectControllerProvider),
+    ),
+  );
 }
