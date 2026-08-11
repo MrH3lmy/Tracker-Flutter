@@ -130,10 +130,9 @@ class TaskArchiveController extends AsyncNotifier<TaskListState> {
   Future<TaskListState> build() => _loadFirstPage();
 
   Future<TaskListState> _loadFirstPage() async {
-    final result = await ref.watch(tasksRepositoryProvider).fetchArchive(
-      page: 0,
-      size: pageSize,
-    );
+    final result = await ref
+        .watch(tasksRepositoryProvider)
+        .fetchArchive(page: 0, size: pageSize);
     return result.when(
       success: (page) => TaskListState(
         tasks: List<Task>.unmodifiable(page.items),
@@ -167,10 +166,9 @@ class TaskArchiveController extends AsyncNotifier<TaskListState> {
       ),
     );
 
-    final result = await ref.read(tasksRepositoryProvider).fetchArchive(
-      page: current.meta.page + 1,
-      size: pageSize,
-    );
+    final result = await ref
+        .read(tasksRepositoryProvider)
+        .fetchArchive(page: current.meta.page + 1, size: pageSize);
     if (requestId != _requestId) return;
 
     result.when(
