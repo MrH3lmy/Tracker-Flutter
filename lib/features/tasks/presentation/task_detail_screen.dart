@@ -49,19 +49,27 @@ class _TaskDetail extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: TextButton.icon(
-            onPressed: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/tasks');
-              }
-            },
-            icon: const Icon(Icons.arrow_back),
-            label: const Text('Back to tasks'),
-          ),
+        Row(
+          children: [
+            TextButton.icon(
+              onPressed: () {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go('/tasks');
+                }
+              },
+              icon: const Icon(Icons.arrow_back),
+              label: const Text('Back to tasks'),
+            ),
+            const Spacer(),
+            if (activeTaskStatuses.contains(task.status))
+              FilledButton.tonalIcon(
+                onPressed: () => context.go('/tasks/${task.id}/edit'),
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit task'),
+              ),
+          ],
         ),
         const SizedBox(height: AppSpacing.sm),
         Row(

@@ -9,8 +9,9 @@ import '../../features/board_columns/presentation/board_screen.dart';
 import '../../features/not_found/presentation/not_found_screen.dart';
 import '../../features/projects/presentation/projects_screen.dart';
 import '../../features/shell/presentation/app_shell.dart';
+import '../../features/shell/presentation/task_destinations.dart';
 import '../../features/tasks/presentation/task_detail_screen.dart';
-import '../../features/tasks/presentation/tasks_screen.dart';
+import '../../features/tasks/presentation/task_edit_screen.dart';
 import 'session_status.dart';
 
 class AppRoutes {
@@ -22,24 +23,19 @@ class AppRoutes {
   static const home = '/';
   static const board = '/board';
   static const tasks = '/tasks';
+  static const taskCreate = '/tasks/new';
   static const taskDetailPattern = '/tasks/:id';
+  static const taskEditPattern = '/tasks/:id/edit';
 
   static String taskDetail(int id) => '/tasks/$id';
+  static String taskEdit(int id) => '/tasks/$id/edit';
 }
 
-/// A stable router instance whose redirect logic is refreshed when session
-/// state changes. Recreating [GoRouter] on every authentication transition
-/// would discard navigation state and could leak the previous router.
 final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RouterRefreshNotifier(ref);
   final router = GoRouter(
     initialLocation: AppRoutes.splash,
     refreshListenable: refreshNotifier,
-    // Single choke point for route guarding, run on every navigation
-    // (including the very first one). [SessionStatus.unknown] covers the
-    // window while a stored/cookie credential is still being checked at
-    // startup — routes are held on the splash screen rather than briefly
-    // rendering the authenticated shell or bouncing to sign-in first.
     redirect: (context, state) {
       final status = ref.read(sessionStatusProvider);
       final path = state.matchedLocation;
@@ -81,16 +77,28 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: AppRoutes.tasks,
-            builder: (context, state) => const TasksScreen(),
+            builder: (context, state) => const TasksDestination(),
+          ),
+          GoRoute(
+            path: AppRoutes.taskCreate,
+            builder: (context, state) => const TaskCreateDestination(),
+          ),
+          GoRoute(
+            path: AppRoutes.taskEditPattern,
+            builder: (context, state) {
+              final taskId = _taskId(state);
+              return taskId == null
+                  ? const NotFoundScreen(message: 'Invalid task id.')
+                  : SafeTaskEditScreen(taskId: taskId);
+            },
           ),
           GoRoute(
             path: AppRoutes.taskDetailPattern,
             builder: (context, state) {
-              final taskId = int.tryParse(state.pathParameters['id'] ?? '');
-              if (taskId == null) {
-                return const NotFoundScreen(message: 'Invalid task id.');
-              }
-              return TaskDetailScreen(taskId: taskId);
+              final taskId = _taskId(state);
+              return taskId == null
+                  ? const NotFoundScreen(message: 'Invalid task id.')
+                  : TaskDetailScreen(taskId: taskId);
             },
           ),
         ],
@@ -107,6 +115,9 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return router;
 });
+
+int? _taskId(GoRouterState state) =>
+    int.tryParse(state.pathParameters['id'] ?? '');
 
 class _RouterRefreshNotifier extends ChangeNotifier {
   _RouterRefreshNotifier(Ref ref) {

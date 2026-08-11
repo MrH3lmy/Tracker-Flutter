@@ -15,8 +15,9 @@ This repository currently contains:
   - Slice 1: the authenticated shell and a Projects list (load, select, refresh, safe selection state). See [Projects](#projects) below.
   - Slice 2: the user's global board-column layout (load, refresh). See [Board columns](#board-columns) below — note this is **not** project-scoped; see that section for why.
   - Slice 3: bounded active-task pagination plus task details, optionally filtered by the selected project. See [Tasks](#tasks) below.
+  - Slice 4: task creation and editing with backend-aligned validation, duplicate-submit protection, and safe selected-project assignment. See [Tasks](#tasks) below.
 
-It intentionally does not yet include task creation/editing, task lifecycle/archive actions, notes, attachments, or settings — those are later slices of the same epic.
+It intentionally does not yet include task lifecycle/archive actions, notes, attachments, or settings — those are later slices of the same epic.
 
 [epic1]: https://github.com/MrH3lmy/Tracker-Flutter/issues/1
 [epic2]: https://github.com/MrH3lmy/Tracker-Flutter/issues/2
@@ -77,7 +78,7 @@ lib/
     shell/         # authenticated app shell (adaptive navigation chrome)
     projects/      # project list + selection — see Projects below
     board_columns/ # the user's global Kanban layout — see Board columns below
-    tasks/         # paginated active tasks + task details — see Tasks below
+    tasks/         # bounded task browse/detail/create/edit — see Tasks below
     not_found/     # unknown-route screen
   src/app.dart     # MaterialApp.router wiring theme + router together
   bootstrap.dart   # shared startup: error handling, logging init, ProviderScope
@@ -148,24 +149,28 @@ Selecting a different project elsewhere in the app has **no effect** on this scr
 
 ## Tasks
 
-`features/tasks/` is epic #4's third vertical slice: bounded active-task browsing and task details against Tracker-BE's paginated `GET /api/v1/tasks` and `GET /api/v1/tasks/{id}` contracts.
+`features/tasks/` is epic #4's third and fourth vertical slices: bounded active-task browsing and task details, followed by task creation and editing against Tracker-BE's real write contracts.
 
 Tracker-BE returns task pages as a plain JSON array and places page metadata in `X-Total-Count`, `X-Total-Pages`, `X-Page`, `X-Page-Size`, and `X-Has-Next`. The backend caps page size and applies a deterministic `(position, id)` ordering. This client deliberately uses `ApiClient.getPaginated`; there is no task-specific "load everything" compatibility path.
 
-- `domain/task.dart` — `Task` mirrors the backend `TaskResponse` used by both list and detail endpoints, including scheduling, priority, hierarchy, dependency/subtask, and recurrence metadata. Enum parsing degrades to explicit unknown cases where appropriate so one newly introduced backend enum does not make the whole task unreadable.
-- `data/tasks_repository.dart` — `TasksRepository` requests one bounded page at a time. The first-release task list sends only active statuses (`BACKLOG`, `NOT_STARTED`, `IN_PROGRESS`, `WAITING`, `BLOCKED`), leaving `DONE`/`CANCELLED` for the later archive/lifecycle slice. When a project is selected, `projectId` is sent to the backend rather than filtering an already-downloaded global list on the device.
+- `domain/task.dart` — `Task` mirrors the backend `TaskResponse` used by both list and detail endpoints, including scheduling, priority, hierarchy, dependency/subtask, and recurrence metadata. Enum parsing degrades to explicit unknown cases where appropriate so one newly introduced backend enum does not make the whole task unreadable. Recurrence preserves the backend's raw frequency value when necessary so a safe edit can round-trip recurrence data it does not otherwise modify.
+- `domain/task_write_input.dart` — maps the editable task state onto the backend's full create/update request shape while deliberately preserving fields this first form does not edit, including actual time, parent task, recurrence, board placement when status is unchanged, and existing dependencies.
+- `data/tasks_repository.dart` — `TasksRepository` requests one bounded page at a time. The first-release task list sends only active statuses (`BACKLOG`, `NOT_STARTED`, `IN_PROGRESS`, `WAITING`, `BLOCKED`), leaving `DONE`/`CANCELLED` for the later archive/lifecycle slice. When a project is selected, `projectId` is sent to the backend rather than filtering an already-downloaded global list on the device. Writes use `POST /api/v1/tasks` and `PUT /api/v1/tasks/{id}`. Because Tracker-BE's create request has no `projectId`, a successful create is followed by `PATCH /api/v1/tasks/{id}/project` when a project is selected; a failure in that second call is surfaced as a warning without pretending the original POST failed.
 - `data/tasks_controller.dart` — `TaskListController` is keyed by `(userId, projectId)`, loads 50 tasks per page, supports pull-to-refresh plus explicit load-more, de-duplicates by task id across page boundaries, and keeps already loaded tasks visible when a later page fails. `TaskDetailController` loads and retries one task by id. Both disable Riverpod's automatic retry because transport failures are already classified and rendered explicitly.
-- `presentation/tasks_screen.dart` — shows all active tasks when no project is selected, or the selected project's active tasks when there is one. The UI always shows loaded-vs-total counts and an explicit load-more action when `X-Has-Next` is true, so a successful first page can never be mistaken for a complete list.
-- `presentation/task_detail_screen.dart` — renders the task itself without pulling notes, screenshots, or attachments into this slice; those belong to their later feature slices.
+- `data/task_write_controller.dart` — serializes create/update submissions so repeated taps cannot duplicate a write, invalidates the affected all-tasks/project task-list caches after success, updates the active detail state after edits, and keeps project-assignment failure separate from task-creation failure.
+- `presentation/tasks_screen.dart` — shows all active tasks when no project is selected, or the selected project's active tasks when there is one. The UI always shows loaded-vs-total counts and an explicit load-more action when `X-Has-Next` is true, and exposes a **New task** action.
+- `presentation/task_detail_screen.dart` — renders the task itself and exposes **Edit task** for active tasks without pulling notes, screenshots, or attachments into this slice; those belong to their later feature slices.
+- `presentation/task_form_screen.dart` — provides create/edit forms with local validation aligned to Tracker-BE for title length, non-negative estimates, date ordering, elevated-risk reasons, blocked-task reasons, and waiting/follow-up requirements. Recurrence is preserved on edit but intentionally not edited yet.
+- `presentation/task_edit_screen.dart` — refuses to silently coerce terminal or unknown-status tasks back into an active status; those edits wait for the lifecycle/archive slice.
 
-The authenticated shell exposes `/tasks`, and `/tasks/:id` keeps the Tasks destination selected so navigating into a detail page does not lose orientation.
+The authenticated shell exposes `/tasks`, `/tasks/new`, `/tasks/:id`, and `/tasks/:id/edit`. Project-to-task composition stays in the shell so the `tasks` feature does not import the `projects` feature directly.
 
 ## Testing
 
 - `test/core/**` — unit tests for `Result`, `AppConfig`, `AppLogger` redaction, breakpoints, and the full networking layer (mapper, pagination parsing, request policy, connectivity classification, and each interceptor's behavior against a fake `HttpClientAdapter` — including concurrent-401 single-flight refresh and non-idempotent no-auto-retry).
-- `test/features/**` — per-feature unit/widget tests following the `data`/`domain`/`presentation` split (auth, projects, board_columns, tasks).
+- `test/features/**` — per-feature unit/widget tests following the `data`/`domain`/`presentation` split (auth, projects, board_columns, tasks), including task write payloads, selected-project assignment, duplicate-submit protection, form validation, and create/edit navigation.
 - `test/widget/**` — widget tests for `AdaptiveScaffold` and an app-level smoke test (launch → authenticated shell; unknown route → not-found screen).
-- `test/integration/app_flow_test.dart` — a widget-test-level run of launch → sign in → authenticated shell → load/select project → open Board/load global columns → open the selected project's bounded Tasks list → open task details, with every provider and screen real except the network repositories, which are faked because no live Tracker-BE is reachable from a widget test.
+- `test/integration/app_flow_test.dart` — a widget-test-level run of launch → sign in → authenticated shell → load/select project → open Board/load global columns → open the selected project's bounded Tasks list → open task details → edit the task → return to the list → create a task in the selected project. Every provider and screen is real except the network repositories, which are faked because no live Tracker-BE is reachable from a widget test.
 - `integration_test/app_test.dart` — true device/backend end-to-end launch smoke test; feature epics continue extending the widget-level flow while device/backend coverage grows alongside release slices.
 
 ## Contributing

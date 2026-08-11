@@ -10,13 +10,11 @@ import 'package:tracker_flutter/features/auth/data/auth_result.dart';
 import 'package:tracker_flutter/features/auth/data/client_platform.dart';
 import 'package:tracker_flutter/features/auth/data/secure_token_storage.dart';
 import 'package:tracker_flutter/features/auth/domain/user.dart';
-import 'package:tracker_flutter/features/projects/data/project_selection_store.dart';
 import 'package:tracker_flutter/features/tasks/data/tasks_repository.dart';
 import 'package:tracker_flutter/features/tasks/domain/task.dart';
 import 'package:tracker_flutter/features/tasks/presentation/tasks_screen.dart';
 
 import '../../../helpers/fake_auth_api.dart';
-import '../../../helpers/fake_project_selection_store.dart';
 import '../../../helpers/fake_secure_token_storage.dart';
 import '../../../helpers/fake_tasks_repository.dart';
 
@@ -66,18 +64,12 @@ void main() {
   Future<FakeTasksRepository> pump(
     WidgetTester tester, {
     required FakeTasksRepository repository,
-    int? selectedProjectId,
+    int? projectId,
   }) async {
-    final selectionStore = FakeProjectSelectionStore();
-    if (selectedProjectId != null) {
-      selectionStore.seed(_user.id, selectedProjectId);
-    }
-
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           tasksRepositoryProvider.overrideWithValue(repository),
-          projectSelectionStoreProvider.overrideWithValue(selectionStore),
           authApiProvider.overrideWithValue(
             FakeAuthApi()
               ..refreshResult = Result.success(
@@ -93,7 +85,9 @@ void main() {
           ),
           clientPlatformProvider.overrideWithValue(ClientPlatform.android),
         ],
-        child: const MaterialApp(home: Scaffold(body: TasksScreen())),
+        child: MaterialApp(
+          home: Scaffold(body: TasksScreen(projectId: projectId)),
+        ),
       ),
     );
     return repository;
@@ -125,6 +119,7 @@ void main() {
     expect(find.text('Second task'), findsOneWidget);
     expect(find.text('2 of 3'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Load more'), findsOneWidget);
+    expect(find.text('New task'), findsOneWidget);
   });
 
   testWidgets('load more appends the next page', (tester) async {
@@ -162,9 +157,7 @@ void main() {
     expect(repo.fetchTasksCalls, 2);
   });
 
-  testWidgets('selected project id is passed to the paginated query', (
-    tester,
-  ) async {
+  testWidgets('project id is passed to the paginated query', (tester) async {
     final repo = FakeTasksRepository()
       ..fetchTasksHandler =
           ({
@@ -176,14 +169,14 @@ void main() {
             _page(0, [_task(1, 'Project task')], totalCount: 1, hasNext: false),
           );
 
-    await pump(tester, repository: repo, selectedProjectId: 55);
+    await pump(tester, repository: repo, projectId: 55);
     await tester.pumpAndSettle();
 
     expect(repo.lastProjectId, 55);
     expect(find.text('Active tasks in selected project'), findsOneWidget);
   });
 
-  testWidgets('empty and offline states remain actionable', (tester) async {
+  testWidgets('empty state includes a create action', (tester) async {
     final emptyRepo = FakeTasksRepository()
       ..fetchTasksHandler =
           ({
@@ -197,6 +190,7 @@ void main() {
     await pump(tester, repository: emptyRepo);
     await tester.pumpAndSettle();
     expect(find.text('No active tasks'), findsOneWidget);
+    expect(find.text('Create task'), findsOneWidget);
   });
 
   testWidgets('repository failure uses the shared error presentation', (

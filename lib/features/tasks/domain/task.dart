@@ -24,6 +24,7 @@ enum RecurrenceFrequency { daily, weekly, monthly, annual, unknown }
 class TaskRecurrence {
   const TaskRecurrence({
     required this.frequency,
+    required this.rawFrequency,
     required this.interval,
     required this.daysOfWeek,
     required this.dayOfMonth,
@@ -34,21 +35,30 @@ class TaskRecurrence {
     required this.longestStreak,
   });
 
-  factory TaskRecurrence.fromJson(Map<String, dynamic> json) => TaskRecurrence(
-    frequency: _recurrenceFrequencyFromJson(json['frequency'] as String?),
-    interval: (json['interval'] as num?)?.toInt() ?? 1,
-    daysOfWeek: ((json['daysOfWeek'] as List?) ?? const [])
-        .whereType<String>()
-        .toList(growable: false),
-    dayOfMonth: (json['dayOfMonth'] as num?)?.toInt(),
-    annualDate: json['annualDate'] as String?,
-    nextDueDate: _dateFromJson(json['nextDueDate'] as String?),
-    lastCompletedDate: _dateFromJson(json['lastCompletedDate'] as String?),
-    currentStreak: (json['currentStreak'] as num?)?.toInt() ?? 0,
-    longestStreak: (json['longestStreak'] as num?)?.toInt() ?? 0,
-  );
+  factory TaskRecurrence.fromJson(Map<String, dynamic> json) {
+    final rawFrequency = json['frequency'] as String?;
+    return TaskRecurrence(
+      frequency: _recurrenceFrequencyFromJson(rawFrequency),
+      rawFrequency: rawFrequency,
+      interval: (json['interval'] as num?)?.toInt() ?? 1,
+      daysOfWeek: ((json['daysOfWeek'] as List?) ?? const [])
+          .whereType<String>()
+          .toList(growable: false),
+      dayOfMonth: (json['dayOfMonth'] as num?)?.toInt(),
+      annualDate: json['annualDate'] as String?,
+      nextDueDate: _dateFromJson(json['nextDueDate'] as String?),
+      lastCompletedDate: _dateFromJson(json['lastCompletedDate'] as String?),
+      currentStreak: (json['currentStreak'] as num?)?.toInt() ?? 0,
+      longestStreak: (json['longestStreak'] as num?)?.toInt() ?? 0,
+    );
+  }
 
   final RecurrenceFrequency frequency;
+
+  /// The exact backend enum value. Keeping this lets an edit round-trip a
+  /// recurrence value introduced by a newer backend even when this client
+  /// does not understand it yet, rather than clearing recurrence on PUT.
+  final String? rawFrequency;
   final int interval;
   final List<String> daysOfWeek;
   final int? dayOfMonth;
@@ -57,6 +67,14 @@ class TaskRecurrence {
   final DateTime? lastCompletedDate;
   final int currentStreak;
   final int longestStreak;
+
+  Map<String, dynamic> toRequestJson() => {
+    'frequency': rawFrequency ?? recurrenceFrequencyApiValue(frequency),
+    'interval': interval,
+    'daysOfWeek': daysOfWeek,
+    'dayOfMonth': dayOfMonth,
+    'annualDate': annualDate,
+  };
 }
 
 /// Mirrors Tracker-BE's `TaskResponse` used by both the paginated task list
@@ -216,6 +234,39 @@ String taskStatusApiValue(TaskStatus status) => switch (status) {
   TaskStatus.unknown => 'UNKNOWN',
 };
 
+String taskAreaApiValue(TaskArea area) => switch (area) {
+  TaskArea.work => 'WORK',
+  TaskArea.study => 'STUDY',
+  TaskArea.personal => 'PERSONAL',
+  TaskArea.health => 'HEALTH',
+  TaskArea.family => 'FAMILY',
+};
+
+String taskEffortApiValue(TaskEffort effort) => switch (effort) {
+  TaskEffort.quick => 'QUICK',
+  TaskEffort.medium => 'MEDIUM',
+  TaskEffort.deepWork => 'DEEP_WORK',
+  TaskEffort.large => 'LARGE',
+  TaskEffort.unknown => 'UNKNOWN',
+};
+
+String taskRiskLevelApiValue(TaskRiskLevel riskLevel) => switch (riskLevel) {
+  TaskRiskLevel.low => 'LOW',
+  TaskRiskLevel.medium => 'MEDIUM',
+  TaskRiskLevel.high => 'HIGH',
+  TaskRiskLevel.critical => 'CRITICAL',
+  TaskRiskLevel.unknown => 'UNKNOWN',
+};
+
+String recurrenceFrequencyApiValue(RecurrenceFrequency frequency) =>
+    switch (frequency) {
+      RecurrenceFrequency.daily => 'DAILY',
+      RecurrenceFrequency.weekly => 'WEEKLY',
+      RecurrenceFrequency.monthly => 'MONTHLY',
+      RecurrenceFrequency.annual => 'YEARLY',
+      RecurrenceFrequency.unknown => 'UNKNOWN',
+    };
+
 TaskStatus _statusFromJson(String? raw) => switch (raw) {
   'BACKLOG' => TaskStatus.backlog,
   'NOT_STARTED' => TaskStatus.notStarted,
@@ -271,7 +322,7 @@ RecurrenceFrequency _recurrenceFrequencyFromJson(String? raw) => switch (raw) {
   'DAILY' => RecurrenceFrequency.daily,
   'WEEKLY' => RecurrenceFrequency.weekly,
   'MONTHLY' => RecurrenceFrequency.monthly,
-  'ANNUAL' => RecurrenceFrequency.annual,
+  'YEARLY' || 'ANNUAL' => RecurrenceFrequency.annual,
   _ => RecurrenceFrequency.unknown,
 };
 
