@@ -21,6 +21,7 @@ import 'package:tracker_flutter/features/projects/data/selected_project_controll
 import 'package:tracker_flutter/features/projects/domain/project.dart';
 import 'package:tracker_flutter/features/tasks/data/tasks_repository.dart';
 import 'package:tracker_flutter/features/tasks/domain/task.dart';
+import 'package:tracker_flutter/features/tasks/domain/task_write_input.dart';
 import 'package:tracker_flutter/src/app.dart';
 
 import '../helpers/fake_auth_api.dart';
@@ -114,67 +115,72 @@ void main() {
         ]);
       final storedTasks = <int, Task>{42: _task(42, 'Build task details')};
       var nextTaskId = 100;
-      final tasksRepo = FakeTasksRepository()
-        ..fetchTasksHandler =
-            ({
-              required int page,
-              required int size,
-              int? projectId,
-              required List<TaskStatus> statuses,
-            }) async {
-              expect(projectId, 1);
-              expect(page, 0);
-              expect(size, 50);
-              final items = storedTasks.values
-                  .where(
-                    (task) =>
-                        task.projectId == projectId &&
-                        statuses.contains(task.status),
-                  )
-                  .toList(growable: false);
-              return Result.success(
-                PaginatedResult(
-                  items: items,
-                  meta: PageMeta(
-                    page: 0,
-                    pageSize: 50,
-                    totalCount: items.length,
-                    totalPages: items.isEmpty ? 0 : 1,
-                    hasNext: false,
-                  ),
-                ),
-              );
-            }
-        ..fetchTaskHandler = (id) async {
-          final task = storedTasks[id];
-          return task == null
-              ? const Result.failure(UnknownFailure(message: 'Missing task'))
-              : Result.success(task);
-        }
-        ..updateTaskHandler = (id, input) async {
-          final existing = storedTasks[id]!;
-          final updated = _task(
-            id,
-            input.title.trim(),
-            projectId: existing.projectId ?? 1,
-          );
-          storedTasks[id] = updated;
-          return Result.success(updated);
-        }
-        ..createTaskHandler = (input, projectId) async {
-          final created = _task(
-            nextTaskId++,
-            input.title.trim(),
-            projectId: projectId ?? 1,
-          );
-          storedTasks[created.id] = created;
-          return Result.success(
-            TaskCreateOutcome(
-              task: created,
-              projectAssignmentFailure: null,
+
+      Future<Result<PaginatedResult<Task>>> fetchTasks({
+        required int page,
+        required int size,
+        int? projectId,
+        required List<TaskStatus> statuses,
+      }) async {
+        expect(projectId, 1);
+        expect(page, 0);
+        expect(size, 50);
+        final items = storedTasks.values.where((task) {
+          return task.projectId == projectId && statuses.contains(task.status);
+        }).toList(growable: false);
+        return Result.success(
+          PaginatedResult(
+            items: items,
+            meta: PageMeta(
+              page: 0,
+              pageSize: 50,
+              totalCount: items.length,
+              totalPages: items.isEmpty ? 0 : 1,
+              hasNext: false,
             ),
-          );
-        };
+          ),
+        );
+      }
+
+      Future<Result<Task>> fetchTask(int id) async {
+        final task = storedTasks[id];
+        if (task == null) {
+          return const Result.failure(UnknownFailure(message: 'Missing task'));
+        }
+        return Result.success(task);
+      }
+
+      Future<Result<Task>> updateTask(int id, TaskWriteInput input) async {
+        final existing = storedTasks[id]!;
+        final updated = _task(
+          id,
+          input.title.trim(),
+          projectId: existing.projectId ?? 1,
+        );
+        storedTasks[id] = updated;
+        return Result.success(updated);
+      }
+
+      Future<Result<TaskCreateOutcome>> createTask(
+        TaskWriteInput input,
+        int? projectId,
+      ) async {
+        final created = _task(
+          nextTaskId++,
+          input.title.trim(),
+          projectId: projectId ?? 1,
+        );
+        storedTasks[created.id] = created;
+        return Result.success(
+          TaskCreateOutcome(task: created, projectAssignmentFailure: null),
+        );
+      }
+
+      final tasksRepo = FakeTasksRepository()
+        ..fetchTasksHandler = fetchTasks
+        ..fetchTaskHandler = fetchTask
+        ..updateTaskHandler = updateTask
+        ..createTaskHandler = createTask;
 
       await tester.pumpWidget(
         ProviderScope(
