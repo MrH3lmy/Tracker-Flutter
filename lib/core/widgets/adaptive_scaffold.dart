@@ -38,12 +38,13 @@ class AdaptiveScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final breakpoint = AppBreakpoint.of(context);
+    final materialBody = Material(color: Colors.transparent, child: body);
 
     switch (breakpoint) {
       case AppBreakpoint.compact:
         return Scaffold(
           appBar: appBar,
-          body: body,
+          body: materialBody,
           bottomNavigationBar: NavigationBar(
             selectedIndex: selectedIndex,
             onDestinationSelected: onDestinationSelected,
@@ -82,7 +83,7 @@ class AdaptiveScaffold extends StatelessWidget {
                 ],
               ),
               const VerticalDivider(width: 1),
-              Expanded(child: body),
+              Expanded(child: materialBody),
             ],
           ),
         );
