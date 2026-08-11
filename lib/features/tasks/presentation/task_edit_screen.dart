@@ -45,10 +45,13 @@ class SafeTaskEditScreen extends ConsumerWidget {
             ),
           );
         }
-        return TaskFormScreen(
-          key: ValueKey('task-form-${task.id}-${task.updatedDate}'),
-          task: task,
-          projectId: task.projectId,
+        return Material(
+          color: Colors.transparent,
+          child: TaskFormScreen(
+            key: ValueKey('task-form-${task.id}-${task.updatedDate}'),
+            task: task,
+            projectId: task.projectId,
+          ),
         );
       },
     );
