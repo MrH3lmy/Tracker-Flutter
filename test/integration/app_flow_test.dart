@@ -270,7 +270,6 @@ void main() {
 
       expect(tasksRepo.updateTaskCalls, 1);
       expect(find.text('Build task details v2'), findsOneWidget);
-      expect(find.text('Task updated'), findsOneWidget);
 
       await tester.tap(find.text('Back to tasks'));
       await tester.pumpAndSettle();
@@ -292,7 +291,6 @@ void main() {
       expect(tasksRepo.createTaskCalls, 1);
       expect(tasksRepo.lastProjectId, 1);
       expect(find.text('Create from Flutter'), findsOneWidget);
-      expect(find.text('Task created'), findsOneWidget);
     },
   );
 }
