@@ -125,9 +125,12 @@ void main() {
         expect(projectId, 1);
         expect(page, 0);
         expect(size, 50);
-        final items = storedTasks.values.where((task) {
-          return task.projectId == projectId && statuses.contains(task.status);
-        }).toList(growable: false);
+        final items = storedTasks.values
+            .where((task) {
+              return task.projectId == projectId &&
+                  statuses.contains(task.status);
+            })
+            .toList(growable: false);
         return Result.success(
           PaginatedResult(
             items: items,
