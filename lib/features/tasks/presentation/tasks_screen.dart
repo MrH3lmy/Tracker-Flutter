@@ -100,6 +100,11 @@ class _TaskList extends StatelessWidget {
                     style: theme.textTheme.bodySmall,
                   ),
                   const SizedBox(width: AppSpacing.sm),
+                  IconButton(
+                    tooltip: 'Archive',
+                    onPressed: () => context.go('/tasks/archive'),
+                    icon: const Icon(Icons.archive_outlined),
+                  ),
                   FilledButton.icon(
                     onPressed: () => context.go('/tasks/new'),
                     icon: const Icon(Icons.add),
@@ -255,6 +260,11 @@ class _EmptyTasksState extends StatelessWidget {
                   onPressed: () => context.go('/tasks/new'),
                   icon: const Icon(Icons.add),
                   label: const Text('Create task'),
+                ),
+                TextButton.icon(
+                  onPressed: () => context.go('/tasks/archive'),
+                  icon: const Icon(Icons.archive_outlined),
+                  label: const Text('Open archive'),
                 ),
               ],
             ),
