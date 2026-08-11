@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/error/app_failure.dart';
+import '../../../core/result/result.dart';
 import '../domain/task.dart';
 import 'tasks_controller.dart';
 import 'tasks_repository.dart';
@@ -47,15 +48,15 @@ class TaskLifecycleController extends Notifier<TaskLifecycleState> {
   Future<Task?> _run({
     required int userId,
     required Task task,
-    required Future<dynamic> Function() operation,
+    required Future<Result<Task>> Function() operation,
   }) async {
     if (state.isSubmitting) return null;
     state = const TaskLifecycleState(isSubmitting: true);
 
     final result = await operation();
-    final updated = result.valueOrNull as Task?;
+    final updated = result.valueOrNull;
     if (updated == null) {
-      state = TaskLifecycleState(failure: result.failureOrNull as AppFailure?);
+      state = TaskLifecycleState(failure: result.failureOrNull);
       return null;
     }
 
@@ -69,7 +70,10 @@ class TaskLifecycleController extends Notifier<TaskLifecycleState> {
     );
     if (task.projectId != null) {
       ref.invalidate(
-        taskListControllerProvider((userId: userId, projectId: task.projectId)),
+        taskListControllerProvider((
+          userId: userId,
+          projectId: task.projectId,
+        )),
       );
     }
     ref.invalidate(taskArchiveControllerProvider(userId));
