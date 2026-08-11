@@ -10,7 +10,6 @@ import '../../auth/data/auth_repository.dart';
 
 enum _AccountAction { signOut, signOutAll }
 
-/// Authenticated application shell shared by mobile, web, and desktop.
 class AppShell extends ConsumerWidget {
   const AppShell({super.key, required this.routerState, required this.child});
 
@@ -21,24 +20,14 @@ class AppShell extends ConsumerWidget {
     AppRoutes.home,
     AppRoutes.board,
     AppRoutes.tasks,
+    AppRoutes.notes,
   ];
 
   static const destinations = [
-    AdaptiveDestination(
-      icon: Icons.folder_outlined,
-      selectedIcon: Icons.folder,
-      label: 'Projects',
-    ),
-    AdaptiveDestination(
-      icon: Icons.view_column_outlined,
-      selectedIcon: Icons.view_column,
-      label: 'Board',
-    ),
-    AdaptiveDestination(
-      icon: Icons.checklist_outlined,
-      selectedIcon: Icons.checklist,
-      label: 'Tasks',
-    ),
+    AdaptiveDestination(icon: Icons.folder_outlined, selectedIcon: Icons.folder, label: 'Projects'),
+    AdaptiveDestination(icon: Icons.view_column_outlined, selectedIcon: Icons.view_column, label: 'Board'),
+    AdaptiveDestination(icon: Icons.checklist_outlined, selectedIcon: Icons.checklist, label: 'Tasks'),
+    AdaptiveDestination(icon: Icons.note_outlined, selectedIcon: Icons.note, label: 'Notes'),
   ];
 
   @override
@@ -66,19 +55,10 @@ class AppShell extends ConsumerWidget {
               if (user != null)
                 PopupMenuItem<_AccountAction>(
                   enabled: false,
-                  child: Text(
-                    user.email,
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
+                  child: Text(user.email, style: Theme.of(context).textTheme.bodySmall),
                 ),
-              const PopupMenuItem(
-                value: _AccountAction.signOut,
-                child: Text('Sign out'),
-              ),
-              const PopupMenuItem(
-                value: _AccountAction.signOutAll,
-                child: Text('Sign out everywhere'),
-              ),
+              const PopupMenuItem(value: _AccountAction.signOut, child: Text('Sign out')),
+              const PopupMenuItem(value: _AccountAction.signOutAll, child: Text('Sign out everywhere')),
             ],
           ),
         ],
@@ -92,10 +72,8 @@ class AppShell extends ConsumerWidget {
 
   static int _selectedIndex(String location) {
     if (location == AppRoutes.board) return 1;
-    if (location == AppRoutes.tasks ||
-        location.startsWith('${AppRoutes.tasks}/')) {
-      return 2;
-    }
+    if (location == AppRoutes.tasks || location.startsWith('${AppRoutes.tasks}/')) return 2;
+    if (location == AppRoutes.notes || location.startsWith('${AppRoutes.notes}/')) return 3;
     return 0;
   }
 }
