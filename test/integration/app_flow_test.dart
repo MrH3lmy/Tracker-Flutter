@@ -30,11 +30,12 @@ import '../helpers/fake_projects_repository.dart';
 import '../helpers/fake_secure_token_storage.dart';
 import '../helpers/fake_tasks_repository.dart';
 
-/// Exercises the epic #4 slices 1-3 flow at the widget-test level: launch ->
+/// Exercises epic #4's first four slices at the widget-test level: launch ->
 /// session restore -> sign in -> select a project -> inspect global board
 /// columns -> browse the selected project's bounded task list -> open task
-/// details. Only network repositories are faked; routing, authentication
-/// state, project selection, pagination state, and screens are real.
+/// details -> edit a task -> create a task in the selected project. Only
+/// network repositories are faked; routing, authentication state, project
+/// selection, pagination state, write state, and screens are real.
 const _user = User(
   id: 1,
   email: 'a@b.com',
@@ -75,6 +76,7 @@ Task _task(int id, String title, {int projectId = 1}) => Task.fromJson({
   'updatedDate': '2026-08-11T01:00:00',
   'important': false,
   'status': 'IN_PROGRESS',
+  'area': 'PERSONAL',
   'effort': 'MEDIUM',
   'overdue': false,
   'urgent': false,
@@ -87,7 +89,7 @@ Task _task(int id, String title, {int projectId = 1}) => Task.fromJson({
 
 void main() {
   testWidgets(
-    'launch -> sign in -> select project -> board -> paginated tasks -> detail',
+    'launch -> sign in -> project -> board -> tasks -> detail -> edit -> create',
     (tester) async {
       final authApi = FakeAuthApi()
         ..refreshResult = const Result.failure(UnauthorizedFailure())
@@ -110,6 +112,8 @@ void main() {
           _column(2, 'In Progress', 3000),
           _column(3, 'Done', 6000),
         ]);
+      final storedTasks = <int, Task>{42: _task(42, 'Build task details')};
+      var nextTaskId = 100;
       final tasksRepo = FakeTasksRepository()
         ..fetchTasksHandler =
             ({
@@ -121,21 +125,56 @@ void main() {
               expect(projectId, 1);
               expect(page, 0);
               expect(size, 50);
+              final items = storedTasks.values
+                  .where(
+                    (task) =>
+                        task.projectId == projectId &&
+                        statuses.contains(task.status),
+                  )
+                  .toList(growable: false);
               return Result.success(
                 PaginatedResult(
-                  items: [_task(42, 'Build task details')],
-                  meta: const PageMeta(
+                  items: items,
+                  meta: PageMeta(
                     page: 0,
                     pageSize: 50,
-                    totalCount: 1,
-                    totalPages: 1,
+                    totalCount: items.length,
+                    totalPages: items.isEmpty ? 0 : 1,
                     hasNext: false,
                   ),
                 ),
               );
             }
-        ..fetchTaskHandler = (id) async =>
-            Result.success(_task(id, 'Build task details'));
+        ..fetchTaskHandler = (id) async {
+          final task = storedTasks[id];
+          return task == null
+              ? const Result.failure(UnknownFailure(message: 'Missing task'))
+              : Result.success(task);
+        }
+        ..updateTaskHandler = (id, input) async {
+          final existing = storedTasks[id]!;
+          final updated = _task(
+            id,
+            input.title.trim(),
+            projectId: existing.projectId ?? 1,
+          );
+          storedTasks[id] = updated;
+          return Result.success(updated);
+        }
+        ..createTaskHandler = (input, projectId) async {
+          final created = _task(
+            nextTaskId++,
+            input.title.trim(),
+            projectId: projectId ?? 1,
+          );
+          storedTasks[created.id] = created;
+          return Result.success(
+            TaskCreateOutcome(
+              task: created,
+              projectAssignmentFailure: null,
+            ),
+          );
+        };
 
       await tester.pumpWidget(
         ProviderScope(
@@ -208,6 +247,43 @@ void main() {
       expect(find.text('Task detail body'), findsOneWidget);
       expect(find.text('In progress'), findsOneWidget);
       expect(tasksRepo.fetchTaskCalls, 1);
+
+      await tester.tap(find.text('Edit task'));
+      await tester.pumpAndSettle();
+      expect(find.text('Edit task'), findsOneWidget);
+
+      final editTitle = find.byType(TextFormField).first;
+      await tester.enterText(editTitle, 'Build task details v2');
+      final saveButton = find.widgetWithText(FilledButton, 'Save changes');
+      await tester.ensureVisible(saveButton);
+      await tester.tap(saveButton);
+      await tester.pumpAndSettle();
+
+      expect(tasksRepo.updateTaskCalls, 1);
+      expect(find.text('Build task details v2'), findsOneWidget);
+      expect(find.text('Task updated'), findsOneWidget);
+
+      await tester.tap(find.text('Back to tasks'));
+      await tester.pumpAndSettle();
+      expect(find.text('Build task details v2'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(FilledButton, 'New task'));
+      await tester.pumpAndSettle();
+      expect(find.text('New task'), findsOneWidget);
+
+      await tester.enterText(
+        find.byType(TextFormField).first,
+        'Create from Flutter',
+      );
+      final createButton = find.widgetWithText(FilledButton, 'Create task');
+      await tester.ensureVisible(createButton);
+      await tester.tap(createButton);
+      await tester.pumpAndSettle();
+
+      expect(tasksRepo.createTaskCalls, 1);
+      expect(tasksRepo.lastProjectId, 1);
+      expect(find.text('Create from Flutter'), findsOneWidget);
+      expect(find.text('Task created'), findsOneWidget);
     },
   );
 }
