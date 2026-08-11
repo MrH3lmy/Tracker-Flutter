@@ -47,6 +47,8 @@ class _LifecycleBar extends ConsumerWidget {
     final provider = taskLifecycleControllerProvider;
     final state = ref.watch(provider);
     final controller = ref.read(provider.notifier);
+    final archived =
+        task.status == TaskStatus.done || task.status == TaskStatus.cancelled;
 
     Future<void> run(Future<Task?> Function() operation) async {
       final updated = await operation();
@@ -80,7 +82,7 @@ class _LifecycleBar extends ConsumerWidget {
                     ),
                   ),
                 ),
-              if (task.archived)
+              if (archived)
                 FilledButton.tonalIcon(
                   onPressed: state.isSubmitting
                       ? null
@@ -115,10 +117,8 @@ class _LifecycleBar extends ConsumerWidget {
                       onPressed: state.isSubmitting
                           ? null
                           : () => run(
-                              () => controller.cancel(
-                                userId: userId,
-                                task: task,
-                              ),
+                              () =>
+                                  controller.cancel(userId: userId, task: task),
                             ),
                       icon: const Icon(Icons.cancel_outlined),
                       label: const Text('Cancel task'),
