@@ -62,7 +62,10 @@ class TaskLifecycleController extends Notifier<TaskLifecycleState> {
 
     ref
         .read(
-          taskDetailControllerProvider((userId: userId, taskId: task.id)).notifier,
+          taskDetailControllerProvider((
+            userId: userId,
+            taskId: task.id,
+          )).notifier,
         )
         .replace(updated);
     ref.invalidate(
@@ -70,10 +73,7 @@ class TaskLifecycleController extends Notifier<TaskLifecycleState> {
     );
     if (task.projectId != null) {
       ref.invalidate(
-        taskListControllerProvider((
-          userId: userId,
-          projectId: task.projectId,
-        )),
+        taskListControllerProvider((userId: userId, projectId: task.projectId)),
       );
     }
     ref.invalidate(taskArchiveControllerProvider(userId));
