@@ -6,7 +6,6 @@ import '../../../core/theme/app_tokens.dart';
 import '../../../core/widgets/async_state_view.dart';
 import '../../auth/data/auth_repository.dart';
 import '../data/tasks_controller.dart';
-import '../domain/task.dart';
 import 'tasks_screen.dart';
 
 class TaskArchiveScreen extends ConsumerWidget {
@@ -26,9 +25,8 @@ class TaskArchiveScreen extends ConsumerWidget {
       value: ref.watch(provider),
       onRetry: () => ref.read(provider.notifier).refresh(),
       isEmpty: (state) => state.tasks.isEmpty,
-      emptyBuilder: (context) => _EmptyArchive(
-        onRefresh: () => ref.read(provider.notifier).refresh(),
-      ),
+      emptyBuilder: (context) =>
+          _EmptyArchive(onRefresh: () => ref.read(provider.notifier).refresh()),
       data: (context, state) => _ArchiveList(
         state: state,
         onRefresh: () => ref.read(provider.notifier).refresh(),
