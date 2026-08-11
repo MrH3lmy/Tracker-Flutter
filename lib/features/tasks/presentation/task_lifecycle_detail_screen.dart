@@ -18,7 +18,9 @@ class TaskLifecycleDetailScreen extends ConsumerWidget {
     final userId = ref.watch(
       authRepositoryProvider.select((session) => session.userOrNull?.id),
     );
-    if (userId == null) return const TaskDetailScreen(taskId: 0);
+    if (userId == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     final detail = ref.watch(
       taskDetailControllerProvider((userId: userId, taskId: taskId)),
@@ -28,8 +30,7 @@ class TaskLifecycleDetailScreen extends ConsumerWidget {
     return Column(
       children: [
         Expanded(child: TaskDetailScreen(taskId: taskId)),
-        if (task != null)
-          _LifecycleBar(userId: userId, task: task),
+        if (task != null) _LifecycleBar(userId: userId, task: task),
       ],
     );
   }
@@ -74,7 +75,9 @@ class _LifecycleBar extends ConsumerWidget {
                   padding: const EdgeInsets.only(bottom: AppSpacing.xs),
                   child: Text(
                     state.failure!.message ?? 'Could not update task status.',
-                    style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
                   ),
                 ),
               if (task.archived)
