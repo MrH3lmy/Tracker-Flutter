@@ -75,9 +75,8 @@ void main() {
     final cancelled = _task(42, 'CANCELLED');
     final reopened = _task(42, 'NOT_STARTED');
     final repository = FakeTasksRepository()
-      ..updateTaskStatusHandler = (id, status) async => Result.success(
-        status == TaskStatus.cancelled ? cancelled : reopened,
-      );
+      ..updateTaskStatusHandler = (id, status) async =>
+          Result.success(status == TaskStatus.cancelled ? cancelled : reopened);
     final container = _container(repository);
     await _primeDetail(container, repository, active);
     final subscription = container.listen(
