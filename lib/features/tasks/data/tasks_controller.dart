@@ -84,10 +84,6 @@ class TaskListController extends AsyncNotifier<TaskListState> {
 
     if (requestId != _requestId) return;
 
-    _applyNextPage(current, result);
-  }
-
-  void _applyNextPage(TaskListState current, dynamic result) {
     result.when(
       success: (page) {
         final byId = <int, Task>{
@@ -126,6 +122,7 @@ class TaskArchiveController extends AsyncNotifier<TaskListState> {
   TaskArchiveController(this.userId);
 
   static const pageSize = 50;
+
   final int userId;
   int _requestId = 0;
 
@@ -148,14 +145,19 @@ class TaskArchiveController extends AsyncNotifier<TaskListState> {
 
   Future<void> refresh() async {
     final requestId = ++_requestId;
-    if (!state.hasValue) state = const AsyncValue.loading();
+    if (!state.hasValue) {
+      state = const AsyncValue.loading();
+    }
     final result = await AsyncValue.guard(_loadFirstPage);
-    if (requestId == _requestId) state = result;
+    if (requestId == _requestId) {
+      state = result;
+    }
   }
 
   Future<void> loadNextPage() async {
     final current = state.value;
     if (current == null || !current.hasNext || current.isLoadingMore) return;
+
     final requestId = ++_requestId;
     state = AsyncValue.data(
       TaskListState(
@@ -164,14 +166,18 @@ class TaskArchiveController extends AsyncNotifier<TaskListState> {
         isLoadingMore: true,
       ),
     );
+
     final result = await ref.read(tasksRepositoryProvider).fetchArchive(
       page: current.meta.page + 1,
       size: pageSize,
     );
     if (requestId != _requestId) return;
+
     result.when(
       success: (page) {
-        final byId = <int, Task>{for (final task in current.tasks) task.id: task};
+        final byId = <int, Task>{
+          for (final task in current.tasks) task.id: task,
+        };
         for (final task in page.items) {
           byId[task.id] = task;
         }
